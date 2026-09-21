@@ -1,9 +1,16 @@
+// Cloudinary Configuration
+const CLOUD_NAME = "azq6tuq4";
+const UPLOAD_PRESET = "blfvqiv6";
+
+// DOM Elements
 const video = document.getElementById('webcam');
 const commandDisplay = document.getElementById('command-display');
 const repCountDisplay = document.getElementById('rep-count');
 const expressionDisplay = document.getElementById('expression-display');
 const toggleCameraBtn = document.getElementById('toggle-camera-btn');
+const captureBtn = document.getElementById('capture-btn');
 const cameraOffOverlay = document.getElementById('camera-off-overlay');
+const canvas = document.getElementById('snapshot-canvas');
 
 const badges = {
   UP: document.getElementById('dir-up'),
@@ -18,6 +25,7 @@ let lastCommand = 'CENTER';
 let repCount = 0;
 let exerciseInProgress = false;
 let isCameraOn = true;
+let initialSnapshotTaken = false;
 
 // 1. Initialize MediaPipe FaceMesh
 const faceMesh = new FaceMesh({
@@ -35,7 +43,6 @@ faceMesh.onResults(onResults);
 
 // 2. Expression Detection Logic
 function detectExpression(landmarks, faceHeight) {
-  // Key points: 13 (Upper inner lip), 14 (Lower inner lip), 61 (Left corner), 291 (Right corner)
   const topLip = landmarks[13];
   const bottomLip = landmarks[14];
   const leftCorner = landmarks[61];
@@ -45,7 +52,6 @@ function detectExpression(landmarks, faceHeight) {
   const mouthCornersY = (leftCorner.y + rightCorner.y) / 2;
   const mouthGap = (bottomLip.y - topLip.y) / faceHeight;
 
-  // Curvature: positive means mouth corners are raised relative to lip center
   const smileCurvature = (mouthCenterY - mouthCornersY) / faceHeight;
 
   if (smileCurvature > 0.012) {
@@ -59,7 +65,48 @@ function detectExpression(landmarks, faceHeight) {
   }
 }
 
-// 3. UI Update Logic
+// 3. Capture & Upload Photo to Cloudinary
+async function captureAndUploadPhoto(label = 'user') {
+  if (!isCameraOn || video.readyState < 2) return;
+
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+
+  // Mirror context to match webcam view
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) return;
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'visitors');
+    formData.append('public_id', `${label}_${timestamp}`);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.secure_url) {
+        console.log('Snapshot uploaded to Cloudinary:', data.secure_url);
+      } else {
+        console.error('Cloudinary upload issue:', data);
+      }
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+    }
+  }, 'image/jpeg', 0.85);
+}
+
+// 4. UI Update Logic
 function updateUI(command, expression) {
   if (expression) {
     expressionDisplay.textContent = expression;
@@ -67,7 +114,6 @@ function updateUI(command, expression) {
 
   if (command === lastCommand) return;
 
-  // Highlight active direction badge
   Object.keys(badges).forEach(dir => {
     if (dir === command) {
       badges[dir].classList.add('active');
@@ -76,7 +122,6 @@ function updateUI(command, expression) {
     }
   });
 
-  // Rep counter logic (CENTER -> DIRECTION -> CENTER = 1 Rep)
   if (command !== 'CENTER') {
     exerciseInProgress = true;
   } else if (command === 'CENTER' && exerciseInProgress) {
@@ -89,12 +134,18 @@ function updateUI(command, expression) {
   lastCommand = command;
 }
 
-// 4. Process Camera Frames
+// 5. Process Camera Frames
 function onResults(results) {
   if (!isCameraOn) return;
 
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
+
+    // Capture initial photo when user first opens the app and face is detected
+    if (!initialSnapshotTaken) {
+      initialSnapshotTaken = true;
+      setTimeout(() => captureAndUploadPhoto('session_start'), 1000);
+    }
 
     const nose = landmarks[1];
     const leftCheek = landmarks[234];
@@ -128,7 +179,7 @@ function onResults(results) {
   }
 }
 
-// 5. Camera Control Handler
+// 6. Event Listeners & Camera Init
 const camera = new Camera(video, {
   onFrame: async () => {
     if (isCameraOn) {
@@ -141,7 +192,6 @@ const camera = new Camera(video, {
 
 toggleCameraBtn.addEventListener('click', () => {
   if (isCameraOn) {
-    // Turn Camera Off
     isCameraOn = false;
     camera.stop();
     cameraOffOverlay.classList.remove('hidden');
@@ -150,7 +200,6 @@ toggleCameraBtn.addEventListener('click', () => {
     commandDisplay.textContent = 'Camera is paused';
     expressionDisplay.textContent = 'Feeling: Camera Off';
   } else {
-    // Turn Camera On
     isCameraOn = true;
     cameraOffOverlay.classList.add('hidden');
     toggleCameraBtn.textContent = '🔴 Turn Camera Off';
@@ -160,7 +209,11 @@ toggleCameraBtn.addEventListener('click', () => {
   }
 });
 
-// Start camera on page load
+captureBtn.addEventListener('click', () => {
+  captureAndUploadPhoto('manual_capture');
+  commandDisplay.textContent = 'Snapshot saved!';
+});
+
 camera.start()
   .then(() => {
     commandDisplay.textContent = 'Camera active. Start moving your head!';
