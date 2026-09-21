@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Head Exercise App</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- MediaPipe FaceMesh & Camera Utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="app-container">
+    <h1>Head Exercise Tracker</h1>
+    
+    <!-- Directional Arrow Indicators -->
+    <div class="direction-grid">
+      <div id="dir-up" class="dir-badge">⬆️ UP</div>
+      <div class="middle-row">
+        <div id="dir-left" class="dir-badge">⬅️ LEFT</div>
+        <div id="dir-center" class="dir-badge active">🎯 CENTER</div>
+        <div id="dir-right" class="dir-badge">➡️ RIGHT</div>
+      </div>
+      <div id="dir-down" class="dir-badge">⬇️ DOWN</div>
+    </div>
+
+    <!-- Video Feed Container -->
+    <div class="video-wrapper">
+      <video id="webcam" autoplay playsinline muted></video>
+    </div>
+
+    <!-- Stats & Feedback Card -->
+    <div class="stats-card">
+      <div id="command-display">Tracking movement...</div>
+      <div class="rep-counter">Reps Completed: <span id="rep-count">0</span></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
