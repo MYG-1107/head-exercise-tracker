@@ -19,14 +19,48 @@ body {
 }
 
 h1 {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #0d1117;
+}
+
+/* Control Panel */
+.control-panel {
+  margin-bottom: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger {
+  background-color: #cf222e;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #a40e26;
+}
+
+.btn-success {
+  background-color: #1a7f37;
+  color: #ffffff;
+}
+
+.btn-success:hover {
+  background-color: #116327;
 }
 
 /* Video Feed */
 .video-wrapper {
   position: relative;
   width: 100%;
+  aspect-ratio: 4 / 3;
   background: #000;
   border-radius: 12px;
   overflow: hidden;
@@ -36,9 +70,29 @@ h1 {
 
 #webcam {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
   transform: scaleX(-1); /* Mirror camera stream */
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 17, 23, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #8b949e;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none !important;
 }
 
 /* Direction Badges Grid */
@@ -77,9 +131,21 @@ h1 {
 /* Stats Card */
 .stats-card {
   background: #ffffff;
-  padding: 18px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.expression-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0969da;
+  margin-bottom: 12px;
 }
 
 #command-display {
