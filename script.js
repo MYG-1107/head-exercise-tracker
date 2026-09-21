@@ -1,6 +1,9 @@
 const video = document.getElementById('webcam');
 const commandDisplay = document.getElementById('command-display');
 const repCountDisplay = document.getElementById('rep-count');
+const expressionDisplay = document.getElementById('expression-display');
+const toggleCameraBtn = document.getElementById('toggle-camera-btn');
+const cameraOffOverlay = document.getElementById('camera-off-overlay');
 
 const badges = {
   UP: document.getElementById('dir-up'),
@@ -14,8 +17,9 @@ let currentCommand = 'CENTER';
 let lastCommand = 'CENTER';
 let repCount = 0;
 let exerciseInProgress = false;
+let isCameraOn = true;
 
-// Initialize MediaPipe FaceMesh
+// 1. Initialize MediaPipe FaceMesh
 const faceMesh = new FaceMesh({
   locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 });
@@ -29,10 +33,41 @@ faceMesh.setOptions({
 
 faceMesh.onResults(onResults);
 
-function updateUI(command) {
+// 2. Expression Detection Logic
+function detectExpression(landmarks, faceHeight) {
+  // Key points: 13 (Upper inner lip), 14 (Lower inner lip), 61 (Left corner), 291 (Right corner)
+  const topLip = landmarks[13];
+  const bottomLip = landmarks[14];
+  const leftCorner = landmarks[61];
+  const rightCorner = landmarks[291];
+
+  const mouthCenterY = (topLip.y + bottomLip.y) / 2;
+  const mouthCornersY = (leftCorner.y + rightCorner.y) / 2;
+  const mouthGap = (bottomLip.y - topLip.y) / faceHeight;
+
+  // Curvature: positive means mouth corners are raised relative to lip center
+  const smileCurvature = (mouthCenterY - mouthCornersY) / faceHeight;
+
+  if (smileCurvature > 0.012) {
+    return '😊 Happy — Looking nice & energetic!';
+  } else if (smileCurvature < -0.010) {
+    return '🙁 Sad — Feeling down? Keep going!';
+  } else if (mouthGap > 0.08) {
+    return '😲 Surprised — Looking excited!';
+  } else {
+    return '😐 Neutral — Focused & calm';
+  }
+}
+
+// 3. UI Update Logic
+function updateUI(command, expression) {
+  if (expression) {
+    expressionDisplay.textContent = expression;
+  }
+
   if (command === lastCommand) return;
 
-  // Highlight current active direction badge
+  // Highlight active direction badge
   Object.keys(badges).forEach(dir => {
     if (dir === command) {
       badges[dir].classList.add('active');
@@ -41,7 +76,7 @@ function updateUI(command) {
     }
   });
 
-  // Rep counting logic (CENTER -> DIRECTION -> CENTER = 1 Rep)
+  // Rep counter logic (CENTER -> DIRECTION -> CENTER = 1 Rep)
   if (command !== 'CENTER') {
     exerciseInProgress = true;
   } else if (command === 'CENTER' && exerciseInProgress) {
@@ -54,7 +89,10 @@ function updateUI(command) {
   lastCommand = command;
 }
 
+// 4. Process Camera Frames
 function onResults(results) {
+  if (!isCameraOn) return;
+
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
 
@@ -82,21 +120,47 @@ function onResults(results) {
       command = 'DOWN';
     }
 
-    updateUI(command);
+    const expression = detectExpression(landmarks, faceHeight);
+    updateUI(command, expression);
   } else {
     commandDisplay.textContent = 'No face detected';
+    expressionDisplay.textContent = 'Feeling: No face detected';
   }
 }
 
-// Start camera stream
+// 5. Camera Control Handler
 const camera = new Camera(video, {
   onFrame: async () => {
-    await faceMesh.send({ image: video });
+    if (isCameraOn) {
+      await faceMesh.send({ image: video });
+    }
   },
   width: 640,
   height: 480
 });
 
+toggleCameraBtn.addEventListener('click', () => {
+  if (isCameraOn) {
+    // Turn Camera Off
+    isCameraOn = false;
+    camera.stop();
+    cameraOffOverlay.classList.remove('hidden');
+    toggleCameraBtn.textContent = '🟢 Turn Camera On';
+    toggleCameraBtn.className = 'btn btn-success';
+    commandDisplay.textContent = 'Camera is paused';
+    expressionDisplay.textContent = 'Feeling: Camera Off';
+  } else {
+    // Turn Camera On
+    isCameraOn = true;
+    cameraOffOverlay.classList.add('hidden');
+    toggleCameraBtn.textContent = '🔴 Turn Camera Off';
+    toggleCameraBtn.className = 'btn btn-danger';
+    commandDisplay.textContent = 'Starting camera...';
+    camera.start();
+  }
+});
+
+// Start camera on page load
 camera.start()
   .then(() => {
     commandDisplay.textContent = 'Camera active. Start moving your head!';
