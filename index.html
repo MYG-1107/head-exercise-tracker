@@ -14,6 +14,11 @@
   <div class="app-container">
     <h1>Head Exercise Tracker</h1>
     
+    <!-- Camera Controls -->
+    <div class="control-panel">
+      <button id="toggle-camera-btn" class="btn btn-danger">🔴 Turn Camera Off</button>
+    </div>
+
     <!-- Directional Arrow Indicators -->
     <div class="direction-grid">
       <div id="dir-up" class="dir-badge">⬆️ UP</div>
@@ -28,10 +33,14 @@
     <!-- Video Feed Container -->
     <div class="video-wrapper">
       <video id="webcam" autoplay playsinline muted></video>
+      <div id="camera-off-overlay" class="overlay hidden">
+        <span>Camera is turned OFF</span>
+      </div>
     </div>
 
-    <!-- Stats & Feedback Card -->
+    <!-- Stats, Expression & Feeling Card -->
     <div class="stats-card">
+      <div id="expression-display" class="expression-badge">Feeling: Detecting...</div>
       <div id="command-display">Tracking movement...</div>
       <div class="rep-counter">Reps Completed: <span id="rep-count">0</span></div>
     </div>
