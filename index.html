@@ -1,249 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Primary Meta Tags -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Head Exercise Tracker | AI-Powered Motion & Neck Rehab Tracker</title>
-  <meta name="title" content="Head Exercise Tracker | AI-Powered Motion & Neck Rehab Tracker">
-  <meta name="description" content="Free browser-based head and neck exercise tracker using AI computer vision. Track repetitions, receive real-time voice prompts, and improve neck mobility with interactive guidance.">
-  <meta name="keywords" content="head exercise tracker, neck exercise online, AI posture tracker, computer vision workout, neck mobility rehab, web-based exercise counter, mediapipe face mesh">
-  <meta name="author" content="Mallarapu Yaswanth">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://myg-1107.github.io/head-exercise-tracker/">
-
-  <!-- Title Logo / Favicon -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="favicon.svg">
-
-  <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://myg-1107.github.io/head-exercise-tracker/">
-  <meta property="og:title" content="Head Exercise Tracker | Real-Time AI Movement Guidance">
-  <meta property="og:description" content="Track your head exercises and neck repetitions in real time directly in your browser with AI voice feedback. No downloads required.">
-  <meta property="og:image" content="https://myg-1107.github.io/head-exercise-tracker/og-image.png">
-
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://myg-1107.github.io/head-exercise-tracker/">
-  <meta property="twitter:title" content="Head Exercise Tracker | AI Motion Tracker">
-  <meta property="twitter:description" content="Interactive head exercise counter with real-time audio prompts powered by AI computer vision.">
-  <meta property="twitter:image" content="https://myg-1107.github.io/head-exercise-tracker/og-image.png">
-
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1.3">
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GMX9HS0Y8T"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-GMX9HS0Y8T');
-  </script>
-
-  <!-- MediaPipe Dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-
-  <!-- Structured Data (JSON-LD) for Search Engines -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Head Exercise Tracker",
-    "url": "https://myg-1107.github.io/head-exercise-tracker/",
-    "applicationCategory": "HealthApplication",
-    "operatingSystem": "All browsers",
-    "description": "An interactive web app that tracks head movements and neck exercise repetitions using computer vision and voice commands.",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
-  }
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Head Exercise Tracker | AI-Powered Movement Tracking</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- Header -->
   <header class="app-header">
     <div class="header-container">
       <a href="#" class="brand-logo">
-        <img src="favicon.svg" alt="Logo" width="32" height="32">
         <span>Head Exercise Tracker</span>
       </a>
       <nav class="nav-links">
-        <a href="#about" class="nav-item" onclick="openModal('about-modal')">About</a>
-        <a href="#contact" class="nav-item" onclick="openModal('contact-modal')">Contact Developer</a>
-        <a href="#privacy" class="nav-item" onclick="openModal('privacy-modal')">Privacy Policy</a>
+        <a href="#" id="how-it-works-link" class="nav-item">How It Works</a>
+        <a href="#" id="about-link" class="nav-item">About</a>
+        <a href="#" id="developer-link" class="nav-item">Contact Developer</a>
+        <a href="#" id="privacy-link" class="nav-item">Privacy Policy</a>
       </nav>
     </div>
   </header>
 
-  <!-- MAIN TRACKER CONTENT -->
+  <!-- Main Application Body -->
   <main class="container">
     <h1>Head Exercise Tracker</h1>
 
-    <!-- How It Works Section -->
-    <div class="instructions-card">
+    <!-- Control Button -->
+    <div class="controls">
+      <button id="toggle-camera-btn">Turn Camera On</button>
+    </div>
+
+    <!-- Direction Badges -->
+    <div class="badge-container">
+      <div class="badge-row">
+        <span class="badge" id="badge-up">↑ UP</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge" id="badge-left">← LEFT</span>
+        <span class="badge active" id="badge-center">🎯 CENTER</span>
+        <span class="badge" id="badge-right">→ RIGHT</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge" id="badge-down">↓ DOWN</span>
+      </div>
+    </div>
+
+    <!-- Video Frame -->
+    <div class="video-container">
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="camera-off-overlay">Camera is Off</div>
+    </div>
+
+    <!-- Status Output -->
+    <div class="status-card">
+      <p id="expression-display">Status: Ready</p>
+      <p id="command-display">Press "Turn Camera On" to start</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; 2026 Head Exercise Tracker. Developed by <strong>Mallarapu Yaswanth</strong>.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-about-link">About</a>
+        <a href="#" class="footer-dev-link">Developer</a>
+        <a href="#" class="footer-privacy-link">Privacy Policy</a>
+        <a href="#" class="footer-disclaimer-link">Medical Disclaimer</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODALS -->
+
+  <!-- How It Works Modal -->
+  <div id="how-it-works-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" id="close-how-it-works">&times;</button>
       <h2>How It Works</h2>
-      <ol>
+      <ol style="margin-top: 16px; padding-left: 20px; line-height: 1.8; color: #444444;">
         <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided by the audio prompts.</li>
         <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
         <li><strong>Hold Center for Summary:</strong> Face forward at the center for <strong>5 seconds</strong> to hear your completed repetition count.</li>
       </ol>
     </div>
-
-    <!-- Camera Control -->
-    <div class="controls">
-      <button id="toggle-camera-btn">Turn Camera On</button>
-    </div>
-
-    <!-- Direction Indicators -->
-    <div class="badge-container">
-      <span class="badge" id="dir-up">⬆ UP</span>
-      <div class="badge-row">
-        <span class="badge" id="dir-left">⬅ LEFT</span>
-        <span class="badge active" id="dir-center">🎯 CENTER</span>
-        <span class="badge" id="dir-right">➡ RIGHT</span>
-      </div>
-      <span class="badge" id="dir-down">⬇ DOWN</span>
-    </div>
-
-    <!-- Video Container -->
-    <div class="video-container">
-      <video id="webcam" autoplay playsinline muted></video>
-      <div id="camera-off-overlay">Camera Offline</div>
-      <canvas id="snapshot-canvas" style="display: none;"></canvas>
-    </div>
-
-    <!-- Status Card -->
-    <div class="status-card">
-      <div id="expression-display">😐 Neutral — Focused & calm</div>
-      <h3 id="command-display">CURRENT DIRECTION: CENTER</h3>
-      <p>Reps Completed: <strong id="rep-count">0</strong></p>
-    </div>
-  </main>
-
-  <!-- MODALS -->
-
-  <!-- 1. ABOUT MODAL -->
-  <div id="about-modal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('about-modal')">&times;</button>
-      <h2>About Head Exercise Tracker</h2>
-      <p><strong>Head Exercise Tracker</strong> is an interactive, browser-native AI application engineered to assist users with physical therapy, neck mobility drills, and ergonomic posture corrections.</p>
-      <h3>Core Capabilities</h3>
-      <ul>
-        <li><strong>Real-time 3D Facial Tracking:</strong> Utilizes MediaPipe's 468-point 3D landmark mesh to calculate head yaw, pitch, and tilt angles without external hardware.</li>
-        <li><strong>Facial Expression Recognition:</strong> Evaluates geometric facial feature ratios in real time to detect engagement, focus, smiling, and breathing states.</li>
-        <li><strong>Voice-Guided Repetition Counting:</strong> Hands-free audio cues announce directional shifts and summarize complete workout sets.</li>
-      </ul>
-      <p>Designed under clean Scandinavian UI principles prioritizing clarity, contrast, and accessibility.</p>
-    </div>
   </div>
 
-  <!-- 2. CONTACT DEVELOPER MODAL -->
-  <div id="contact-modal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('contact-modal')">&times;</button>
-      <h2>Contact Developer</h2>
-      <div class="developer-profile">
-        <h3>Mallarapu Yaswanth</h3>
-        <p class="role-title">Machine Learning & AI Engineer</p>
-        <p>Specializing in computer vision algorithms, deterministic AI systems, and microservice architectures.</p>
-        
-        <div class="contact-details">
-          <p><strong>Email:</strong> <a href="mailto:mallarapuyaswanth05@gmail.com">mallarapuyaswanth05@gmail.com</a></p>
-          <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/my2004/" target="_blank" rel="noopener">linkedin.com/in/my2004/</a></p>
-          <p><strong>Location:</strong> Khammam, Hyderabad — Telangana, India</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. PRIVACY POLICY MODAL -->
-  <div id="privacy-modal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('privacy-modal')">&times;</button>
-      <h2>Privacy Policy</h2>
-      <p><em>Last updated: September 2026</em></p>
-      <p>Your privacy is paramount. The <strong>Head Exercise Tracker</strong> application is built with client-side edge computing principles:</p>
-      <ul>
-        <li><strong>Local Frame Processing:</strong> Video feeds from your webcam are processed locally in real time inside your browser memory using MediaPipe WebAssembly modules.</li>
-        <li><strong>No Continuous Video Storage:</strong> Raw webcam video streams are never recorded, streamed to central application servers, or sold to third parties.</li>
-        <li><strong>Analytics:</strong> Standard anonymized website usage statistics are captured via Google Analytics to monitor application performance and stability.</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 4. HEALTH & MEDICAL DISCLAIMER MODAL -->
-  <div id="disclaimer-modal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('disclaimer-modal')">&times;</button>
-      <h2>Health & Safety Disclaimer</h2>
-      <p><strong>Important Notice:</strong> The Head Exercise Tracker is an automated educational tool designed to assist with movement counting and general mobility awareness.</p>
-      <p>This software does <strong>not</strong> constitute professional medical advice, diagnosis, or physical therapy treatment. Consult a physician or certified physical therapist before beginning any new exercise routine, especially if you have pre-existing cervical spine conditions, neck injury, or chronic pain.</p>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="app-footer">
-    <div class="footer-container">
-      <p>&copy; 2026 Head Exercise Tracker. Developed by <strong>Mallarapu Yaswanth</strong>.</p>
-      <div class="footer-links">
-        <a href="#about" onclick="openModal('about-modal')">About</a>
-        <a href="#contact" onclick="openModal('contact-modal')">Developer</a>
-        <a href="#privacy" onclick="openModal('privacy-modal')">Privacy Policy</a>
-        <a href="#disclaimer" onclick="openModal('disclaimer-modal')">Medical Disclaimer</a>
-      </div>
-    </div>
-  </footer>
-
+  <!-- JavaScript -->
   <script src="script.js"></script>
-
-  <!-- UI & Modal Script -->
-  <script>
-    // Modal Navigation Controls
-    function openModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'flex';
-      }
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'none';
-      }
-    }
-
-    // Close Modal on Background Click
-    window.addEventListener('click', (event) => {
-      if (event.target.classList.contains('modal-overlay')) {
-        event.target.style.display = 'none';
-      }
-    });
-
-    // Disable right-click context menu
-    document.addEventListener('contextmenu', (event) => {
-      event.preventDefault();
-    });
-
-    // Disable common DevTools shortcuts
-    document.addEventListener('keydown', (event) => {
-      if (
-        event.key === 'F12' || 
-        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j' || event.key === 'C' || event.key === 'c')) ||
-        (event.ctrlKey && (event.key === 'U' || event.key === 'u'))
-      ) {
-        event.preventDefault();
-      }
-    });
-  </script>
 </body>
 </html>
