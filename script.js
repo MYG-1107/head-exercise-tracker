@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const dataUrl = photoCanvas.toDataURL('image/jpeg', 0.85);
 
-    if (commandDisplay) commandDisplay.innerText = '☁️ Uploading photo to Cloudinary...';
+    if (commandDisplay) commandDisplay.innerText = '';
 
     const cloudinaryUrl = await uploadToCloudinary(dataUrl, label);
     const photoUrl = cloudinaryUrl || dataUrl; // Use Cloudinary URL if available, fallback to local base64
@@ -158,9 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (commandDisplay) {
       if (cloudinaryUrl) {
-        commandDisplay.innerText = `Uploaded to Cloudinary! Total Reps: ${repetitionCount}`;
+        commandDisplay.innerText = ` Total Reps: ${repetitionCount}`;
       } else {
-        commandDisplay.innerText = `Saved locally (Cloudinary config needed). Reps: ${repetitionCount}`;
+        commandDisplay.innerText = `. Reps: ${repetitionCount}`;
       }
     }
   }
