@@ -63,6 +63,10 @@
       "priceCurrency": "USD"
     }
   }
+    // Disable right-click context menu across the entire page
+document.addEventListener('contextmenu', (event) => {
+  event.preventDefault();
+});
   </script>
 </head>
 <body>
