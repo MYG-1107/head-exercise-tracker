@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { triggerIds: ['link-about', 'footer-link-about'], modalId: 'modal-about' },
     { triggerIds: ['link-developer', 'footer-link-developer'], modalId: 'modal-developer' },
     { triggerIds: ['link-privacy', 'footer-link-privacy'], modalId: 'modal-privacy' },
-    { triggerIds: ['footer-link-disclaimer'], modalId: 'modal-disclaimer' }
+    { triggerIds: ['footer-link-disclaimer'], modalId: 'modal-disclaimer' },
+    { triggerIds: ['view-gallery-btn'], modalId: 'modal-gallery' }
   ];
 
   modalTriggers.forEach(({ triggerIds, modalId }) => {
@@ -38,10 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- 2. WEBCAM & TRACKING ELEMENTS ---
   const toggleCamBtn = document.getElementById('toggle-camera-btn');
+  const capturePhotoBtn = document.getElementById('capture-photo-btn');
   const videoElement = document.getElementById('webcam');
   const overlayElement = document.getElementById('camera-off-overlay');
   const expressionDisplay = document.getElementById('expression-display');
   const commandDisplay = document.getElementById('command-display');
+  const photoCanvas = document.getElementById('photo-canvas');
+  const galleryContainer = document.getElementById('gallery-container');
+  const photoCountSpan = document.getElementById('photo-count');
 
   const badges = {
     UP: document.getElementById('badge-up'),
@@ -56,13 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let faceMesh = null;
   let cameraUtils = null;
 
-  // Exercise State Variables
+  // Exercise & Screenshot State
   let currentDirection = 'CENTER';
   let currentExpression = 'Neutral';
   let repetitionCount = 0;
   let centerHoldStartTime = null;
+  let capturedPhotos = [];
 
-  // Voice Prompt Helper
   function speak(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -72,12 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Helper Euclidean Distance Function
   function distance(pt1, pt2) {
     return Math.sqrt(Math.pow(pt1.x - pt2.x, 2) + Math.pow(pt1.y - pt2.y, 2));
   }
 
-  // Update Visual Badges
   function setActiveBadge(direction) {
     Object.keys(badges).forEach(dir => {
       if (badges[dir]) {
@@ -86,7 +89,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 3. MEDIAPIPE FACE MESH (POSE + EXPRESSION RECOGNITION) ---
+  // --- 3. PHOTO CAPTURE & GALLERY MANAGEMENT ---
+  function capturePhoto(label = 'Manual') {
+    if (!isCameraActive || !videoElement.videoWidth) return;
+
+    const ctx = photoCanvas.getContext('2d');
+    photoCanvas.width = videoElement.videoWidth;
+    photoCanvas.height = videoElement.videoHeight;
+
+    // Mirror horizontal canvas draw to match webcam video CSS
+    ctx.translate(photoCanvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(videoElement, 0, 0, photoCanvas.width, photoCanvas.height);
+
+    const dataUrl = photoCanvas.toDataURL('image/png');
+    const photoItem = {
+      id: Date.now(),
+      url: dataUrl,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      info: `${currentDirection} | ${currentExpression}`
+    };
+
+    capturedPhotos.unshift(photoItem);
+    updateGalleryUI();
+  }
+
+  function updateGalleryUI() {
+    photoCountSpan.innerText = capturedPhotos.length;
+
+    if (capturedPhotos.length === 0) {
+      galleryContainer.innerHTML = '<p class="empty-msg">No screenshots captured yet. Turn on the camera and click "Take Screenshot" or complete exercises!</p>';
+      return;
+    }
+
+    galleryContainer.innerHTML = capturedPhotos.map(photo => `
+      <div class="photo-card" id="photo-${photo.id}">
+        <img src="${photo.url}" alt="Screenshot ${photo.timestamp}" />
+        <div class="photo-card-info">
+          <span>${photo.info}</span>
+          <div class="photo-card-actions">
+            <a href="${photo.url}" download="head-exercise-${photo.id}.png" class="photo-btn download">💾</a>
+            <button class="photo-btn delete" onclick="deletePhoto(${photo.id})">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.deletePhoto = function(id) {
+    capturedPhotos = capturedPhotos.filter(p => p.id !== id);
+    updateGalleryUI();
+  };
+
+  capturePhotoBtn.addEventListener('click', () => {
+    capturePhoto('Manual');
+  });
+
+  // --- 4. MEDIAPIPE FACE MESH (POSE + EXPRESSION + AUTO-CAPTURE) ---
   function onResults(results) {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
@@ -95,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const landmarks = results.multiFaceLandmarks[0];
 
-    // Landmark Points
     const nose = landmarks[1];
     const leftEye = landmarks[33];
     const rightEye = landmarks[263];
@@ -104,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mouthCornerLeft = landmarks[61];
     const mouthCornerRight = landmarks[291];
 
-    // --- A. HEAD POSE DETECTION ---
+    // Head Pose
     const eyeCenterY = (leftEye.y + rightEye.y) / 2;
     const noseVerticalOffset = nose.y - eyeCenterY;
     const noseHorizontalOffset = nose.x - ((leftEye.x + rightEye.x) / 2);
@@ -121,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detectedDir = 'RIGHT';
     }
 
-    // --- B. FACIAL EXPRESSION DETECTION ---
+    // Facial Expression
     const mouthHeight = distance(upperLipInner, lowerLipInner);
     const mouthWidth = distance(mouthCornerLeft, mouthCornerRight);
     const faceWidth = distance(leftEye, rightEye);
@@ -139,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
       detectedExpression = 'Neutral';
     }
 
-    // --- C. UPDATE UI & REPETITIONS ---
     currentExpression = detectedExpression;
 
     if (detectedDir !== currentDirection) {
@@ -151,15 +208,16 @@ document.addEventListener('DOMContentLoaded', () => {
         commandDisplay.innerText = `Repetitions Completed: ${repetitionCount}`;
         speak(currentDirection.toLowerCase());
         centerHoldStartTime = null;
+
+        // Auto Snapshot on Repetition Completion
+        capturePhoto('Auto-Rep');
       } else {
         centerHoldStartTime = Date.now();
       }
     }
 
-    // Display Both Pose & Facial Expression
     expressionDisplay.innerHTML = `Head Pose: <span>${currentDirection}</span> | Expression: <span>${currentExpression}</span>`;
 
-    // 5-Second Center Hold for Summary Audio
     if (currentDirection === 'CENTER' && centerHoldStartTime) {
       const elapsedSeconds = Math.floor((Date.now() - centerHoldStartTime) / 1000);
       if (elapsedSeconds >= 5) {
@@ -169,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 4. CAMERA CONTROL FUNCTIONS ---
+  // --- 5. CAMERA CONTROL FUNCTIONS ---
   async function startCamera() {
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
@@ -205,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isCameraActive = true;
       toggleCamBtn.innerText = 'Turn Camera Off';
       toggleCamBtn.style.backgroundColor = '#333333';
+      capturePhotoBtn.disabled = false;
       commandDisplay.innerText = 'Repetitions Completed: 0';
       speak('Camera activated. Follow direction prompts.');
 
@@ -226,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isCameraActive = false;
     toggleCamBtn.innerText = 'Turn Camera On';
     toggleCamBtn.style.backgroundColor = '#D02B2B';
+    capturePhotoBtn.disabled = true;
     expressionDisplay.innerHTML = 'Head Pose: <span>Stopped</span> | Expression: <span>--</span>';
     commandDisplay.innerText = 'Press "Turn Camera On" to start';
     setActiveBadge('CENTER');
