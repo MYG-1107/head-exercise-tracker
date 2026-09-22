@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Exercise State Variables
   let currentDirection = 'CENTER';
+  let currentExpression = 'Neutral';
   let repetitionCount = 0;
-  let centerTimer = null;
   let centerHoldStartTime = null;
 
   // Voice Prompt Helper
@@ -72,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Helper Euclidean Distance Function
+  function distance(pt1, pt2) {
+    return Math.sqrt(Math.pow(pt1.x - pt2.x, 2) + Math.pow(pt1.y - pt2.y, 2));
+  }
+
   // Update Visual Badges
   function setActiveBadge(direction) {
     Object.keys(badges).forEach(dir => {
@@ -81,23 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 3. MEDIAPIPE FACE MESH & POSE LOGIC ---
+  // --- 3. MEDIAPIPE FACE MESH (POSE + EXPRESSION RECOGNITION) ---
   function onResults(results) {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-      expressionDisplay.innerText = 'Status: Searching for face...';
+      expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
       return;
     }
 
     const landmarks = results.multiFaceLandmarks[0];
+
+    // Landmark Points
     const nose = landmarks[1];
     const leftEye = landmarks[33];
     const rightEye = landmarks[263];
-    const chin = landmarks[152];
+    const upperLipInner = landmarks[13];
+    const lowerLipInner = landmarks[14];
+    const mouthCornerLeft = landmarks[61];
+    const mouthCornerRight = landmarks[291];
 
-    // Compute relative movement metrics
+    // --- A. HEAD POSE DETECTION ---
     const eyeCenterY = (leftEye.y + rightEye.y) / 2;
-    const eyeDistX = Math.abs(rightEye.x - leftEye.x);
-
     const noseVerticalOffset = nose.y - eyeCenterY;
     const noseHorizontalOffset = nose.x - ((leftEye.x + rightEye.x) / 2);
 
@@ -108,15 +116,35 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (noseVerticalOffset > 0.085) {
       detectedDir = 'DOWN';
     } else if (noseHorizontalOffset > 0.035) {
-      detectedDir = 'LEFT'; // Mirrored video feed
+      detectedDir = 'LEFT';
     } else if (noseHorizontalOffset < -0.035) {
-      detectedDir = 'RIGHT'; // Mirrored video feed
+      detectedDir = 'RIGHT';
     }
+
+    // --- B. FACIAL EXPRESSION DETECTION ---
+    const mouthHeight = distance(upperLipInner, lowerLipInner);
+    const mouthWidth = distance(mouthCornerLeft, mouthCornerRight);
+    const faceWidth = distance(leftEye, rightEye);
+
+    const mouthRatio = mouthHeight / (mouthWidth + 0.0001);
+    const smileRatio = mouthWidth / (faceWidth + 0.0001);
+
+    let detectedExpression = 'Neutral';
+
+    if (mouthRatio > 0.38) {
+      detectedExpression = 'Mouth Open / Surprised';
+    } else if (smileRatio > 0.52) {
+      detectedExpression = 'Smiling';
+    } else {
+      detectedExpression = 'Neutral';
+    }
+
+    // --- C. UPDATE UI & REPETITIONS ---
+    currentExpression = detectedExpression;
 
     if (detectedDir !== currentDirection) {
       currentDirection = detectedDir;
       setActiveBadge(currentDirection);
-      expressionDisplay.innerText = `Head Pose: ${currentDirection}`;
 
       if (currentDirection !== 'CENTER') {
         repetitionCount++;
@@ -128,12 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 5-Second Center Hold for Summary
+    // Display Both Pose & Facial Expression
+    expressionDisplay.innerHTML = `Head Pose: <span>${currentDirection}</span> | Expression: <span>${currentExpression}</span>`;
+
+    // 5-Second Center Hold for Summary Audio
     if (currentDirection === 'CENTER' && centerHoldStartTime) {
       const elapsedSeconds = Math.floor((Date.now() - centerHoldStartTime) / 1000);
       if (elapsedSeconds >= 5) {
         speak(`Exercise summary. You completed ${repetitionCount} repetitions.`);
-        centerHoldStartTime = null; // Prevent repeating audio loop
+        centerHoldStartTime = null;
       }
     }
   }
@@ -145,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
       videoElement.srcObject = cameraStream;
       overlayElement.style.display = 'none';
 
-      // Initialize FaceMesh
       if (!faceMesh) {
         faceMesh = new FaceMesh({
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
@@ -159,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
         faceMesh.onResults(onResults);
       }
 
-      // Initialize Camera Utils loop
       if (window.Camera) {
         cameraUtils = new Camera(videoElement, {
           onFrame: async () => {
@@ -176,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isCameraActive = true;
       toggleCamBtn.innerText = 'Turn Camera Off';
       toggleCamBtn.style.backgroundColor = '#333333';
-      commandDisplay.innerText = 'Look UP, DOWN, LEFT, or RIGHT to begin';
+      commandDisplay.innerText = 'Repetitions Completed: 0';
       speak('Camera activated. Follow direction prompts.');
 
     } catch (err) {
@@ -197,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isCameraActive = false;
     toggleCamBtn.innerText = 'Turn Camera On';
     toggleCamBtn.style.backgroundColor = '#D02B2B';
-    expressionDisplay.innerText = 'Status: Stopped';
+    expressionDisplay.innerHTML = 'Head Pose: <span>Stopped</span> | Expression: <span>--</span>';
     commandDisplay.innerText = 'Press "Turn Camera On" to start';
     setActiveBadge('CENTER');
   }
