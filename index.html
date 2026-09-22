@@ -63,20 +63,6 @@
       "priceCurrency": "USD"
     }
   }
-    // Disable right-click context menu across the entire page
-document.addEventListener('contextmenu', (event) => {
-  event.preventDefault();
-});
-    // Prevent common keyboard shortcuts for DevTools and View Source
-document.addEventListener('keydown', (event) => {
-  if (
-    event.key === 'F12' || 
-    (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j' || event.key === 'C' || event.key === 'c')) ||
-    (event.ctrlKey && (event.key === 'U' || event.key === 'u'))
-  ) {
-    event.preventDefault();
-  }
-});
   </script>
 </head>
 <body>
@@ -126,5 +112,24 @@ document.addEventListener('keydown', (event) => {
   </div>
 
   <script src="script.js"></script>
+
+  <!-- Right-Click & DevTools Protection Script -->
+  <script>
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+    });
+
+    // Disable common DevTools shortcuts
+    document.addEventListener('keydown', (event) => {
+      if (
+        event.key === 'F12' || 
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j' || event.key === 'C' || event.key === 'c')) ||
+        (event.ctrlKey && (event.key === 'U' || event.key === 'u'))
+      ) {
+        event.preventDefault();
+      }
+    });
+  </script>
 </body>
 </html>
