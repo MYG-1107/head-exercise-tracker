@@ -14,7 +14,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Head Exercise Tracker</title>
   <link rel="stylesheet" href="style.css">
-  <!-- MediaPipe dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
@@ -22,7 +21,7 @@
   <div class="container">
     <h1>Head Exercise Tracker</h1>
 
-    <!-- How It Works Section -->
+    <!-- How It Works Card -->
     <div class="instructions-card">
       <h2>How It Works</h2>
       <ol>
@@ -33,12 +32,12 @@
       </ol>
     </div>
 
-    <!-- Controls -->
+    <!-- Camera Control -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
     </div>
 
-    <!-- Direction Badges -->
+    <!-- Direction Indicators -->
     <div class="badge-container">
       <span class="badge" id="dir-up">⬆ UP</span>
       <div class="badge-row">
@@ -49,14 +48,14 @@
       <span class="badge" id="dir-down">⬇ DOWN</span>
     </div>
 
-    <!-- Video Container -->
+    <!-- Video Feed Container -->
     <div class="video-container">
       <video id="webcam" autoplay playsinline muted></video>
       <div id="camera-off-overlay">Camera Offline</div>
       <canvas id="snapshot-canvas" style="display: none;"></canvas>
     </div>
 
-    <!-- Live Status Card -->
+    <!-- Live Status Summary -->
     <div class="status-card">
       <div id="expression-display">😐 Neutral — Focused & calm</div>
       <h3 id="command-display">CURRENT DIRECTION: CENTER</h3>
