@@ -69,24 +69,30 @@ function detectExpression(landmarks, faceHeight) {
 async function captureAndUploadPhoto(label = 'user') {
   if (!isCameraOn || video.readyState < 2) return;
 
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
-  const ctx = canvas.getContext('2d');
+  // Fallback to create canvas if missing from index.html
+  let canvasEl = canvas || document.getElementById('snapshot-canvas');
+  if (!canvasEl) {
+    canvasEl = document.createElement('canvas');
+    canvasEl.id = 'snapshot-canvas';
+    canvasEl.style.display = 'none';
+    document.body.appendChild(canvasEl);
+  }
+
+  canvasEl.width = video.videoWidth || 640;
+  canvasEl.height = video.videoHeight || 480;
+  const ctx = canvasEl.getContext('2d');
 
   // Mirror context to match webcam view
-  ctx.translate(canvas.width, 0);
+  ctx.translate(canvasEl.width, 0);
   ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(video, 0, 0, canvasEl.width, canvasEl.height);
 
-  canvas.toBlob(async (blob) => {
+  canvasEl.toBlob(async (blob) => {
     if (!blob) return;
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const formData = new FormData();
     formData.append('file', blob);
     formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', 'visitors');
-    formData.append('public_id', `${label}_${timestamp}`);
 
     try {
       const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
@@ -96,16 +102,15 @@ async function captureAndUploadPhoto(label = 'user') {
 
       const data = await response.json();
       if (data.secure_url) {
-        console.log('Snapshot uploaded to Cloudinary:', data.secure_url);
+        console.log('✅ Snapshot uploaded successfully:', data.secure_url);
       } else {
-        console.error('Cloudinary upload issue:', data);
+        console.error('❌ Cloudinary Upload Failed:', data);
       }
     } catch (error) {
-      console.error('Cloudinary upload error:', error);
+      console.error('❌ Network Error during upload:', error);
     }
   }, 'image/jpeg', 0.85);
 }
-
 // 4. UI Update Logic
 function updateUI(command, expression) {
   if (expression) {
