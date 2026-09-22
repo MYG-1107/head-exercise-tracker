@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <!-- Video Container -->
+    <!-- Maximized Video Container -->
     <div class="video-container">
       <video id="webcam" autoplay playsinline muted></video>
       <div id="camera-off-overlay">Camera is Off</div>
@@ -82,9 +82,9 @@
   <div id="modal-gallery" class="modal-overlay">
     <div class="modal-card gallery-modal">
       <button class="modal-close">&times;</button>
-      <h2>Captured Screenshots</h2>
+      <h2>Captured & Uploaded Photos</h2>
       <div id="gallery-container" class="gallery-grid">
-        <p class="empty-msg">No screenshots captured yet. Turn on the camera and click "Take Screenshot" or complete exercises!</p>
+        <p class="empty-msg">No snapshots taken yet. Click "📸 Take Screenshot" or perform an exercise movement!</p>
       </div>
     </div>
   </div>
@@ -97,7 +97,7 @@
         <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
         <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete repetition cycles.</li>
-        <li><strong>Take Screenshots:</strong> Click "Take Screenshot" to capture picture frames anytime.</li>
+        <li><strong>Cloudinary Uploads:</strong> Photos are automatically captured on pose changes or via "Take Screenshot" and uploaded to Cloudinary.</li>
       </ol>
     </div>
   </div>
@@ -107,7 +107,7 @@
       <button class="modal-close">&times;</button>
       <h2>About Head Exercise Tracker</h2>
       <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        A real-time computer vision application for neck exercise, posture correction, and facial mobility feedback operating entirely inside your web browser.
+        A real-time computer vision application for neck exercise, posture correction, and facial mobility feedback.
       </p>
     </div>
   </div>
@@ -126,7 +126,7 @@
       <button class="modal-close">&times;</button>
       <h2>Privacy Policy</h2>
       <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        100% Client-Side Privacy: Camera feeds and facial landmark data are calculated locally in your browser and are never saved or sent to any cloud server.
+        Camera feeds and landmark calculations are processed locally. Photos are only uploaded to Cloudinary if configured.
       </p>
     </div>
   </div>
