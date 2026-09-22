@@ -365,10 +365,10 @@ html, body {
 }
 
 .photo-btn.download {
-  background: #28a745;
+  background: #0078D4;
 }
 
-/* Responsive Adjustments */
+/* Mobile Adjustments */
 @media (max-width: 600px) {
   .app-header { padding: 5px 10px; }
   .brand-logo { font-size: 0.85rem; }
