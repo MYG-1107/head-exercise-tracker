@@ -5,20 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Head Exercise Tracker | AI-Powered Movement Tracking</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- MediaPipe Libraries for AI Head Tracking -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header Navigation -->
   <header class="app-header">
     <div class="header-container">
       <a href="#" class="brand-logo">
         <span>Head Exercise Tracker</span>
       </a>
       <nav class="nav-links">
-        <a href="#" id="how-it-works-link" class="nav-item">How It Works</a>
-        <a href="#" id="about-link" class="nav-item">About</a>
-        <a href="#" id="developer-link" class="nav-item">Contact Developer</a>
-        <a href="#" id="privacy-link" class="nav-item">Privacy Policy</a>
+        <a href="#" id="link-how-it-works" class="nav-item">How It Works</a>
+        <a href="#" id="link-about" class="nav-item">About</a>
+        <a href="#" id="link-developer" class="nav-item">Contact Developer</a>
+        <a href="#" id="link-privacy" class="nav-item">Privacy Policy</a>
       </nav>
     </div>
   </header>
@@ -56,19 +60,19 @@
     <!-- Status Output -->
     <div class="status-card">
       <p id="expression-display">Status: Ready</p>
-      <p id="command-display">Press "Turn Camera On" to start</p>
+      <p id="command-display">Press "Turn Camera On" to start exercise tracking</p>
     </div>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer Navigation -->
   <footer class="app-footer">
     <div class="footer-container">
       <p>&copy; 2026 Head Exercise Tracker. Developed by <strong>Mallarapu Yaswanth</strong>.</p>
       <div class="footer-links">
-        <a href="#" class="footer-about-link">About</a>
-        <a href="#" class="footer-dev-link">Developer</a>
-        <a href="#" class="footer-privacy-link">Privacy Policy</a>
-        <a href="#" class="footer-disclaimer-link">Medical Disclaimer</a>
+        <a href="#" id="footer-link-about">About</a>
+        <a href="#" id="footer-link-developer">Developer</a>
+        <a href="#" id="footer-link-privacy">Privacy Policy</a>
+        <a href="#" id="footer-link-disclaimer">Medical Disclaimer</a>
       </div>
     </div>
   </footer>
@@ -76,20 +80,67 @@
   <!-- MODALS -->
 
   <!-- How It Works Modal -->
-  <div id="how-it-works-modal" class="modal-overlay">
+  <div id="modal-how-it-works" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" id="close-how-it-works">&times;</button>
+      <button class="modal-close" class="close-modal">&times;</button>
       <h2>How It Works</h2>
       <ol style="margin-top: 16px; padding-left: 20px; line-height: 1.8; color: #444444;">
         <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
-        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided by the audio prompts.</li>
+        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided.</li>
         <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
-        <li><strong>Hold Center for Summary:</strong> Face forward at the center for <strong>5 seconds</strong> to hear your completed repetition count.</li>
+        <li><strong>Hold Center for Summary:</strong> Hold center focus for <strong>5 seconds</strong> to hear your repetition summary.</li>
       </ol>
     </div>
   </div>
 
-  <!-- JavaScript -->
+  <!-- About Modal -->
+  <div id="modal-about" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" class="close-modal">&times;</button>
+      <h2>About Head Exercise Tracker</h2>
+      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
+        Head Exercise Tracker is a web-based artificial intelligence tool designed to assist with neck mobility, physical therapy, and ergonomic posture breaks. Using real-time computer vision landmark detection directly inside your browser, no video data is sent to any server.
+      </p>
+    </div>
+  </div>
+
+  <!-- Contact Developer Modal -->
+  <div id="modal-developer" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" class="close-modal">&times;</button>
+      <h2>Developer Information</h2>
+      <div class="developer-profile" style="margin-top: 16px;">
+        <p><strong>Lead Architect:</strong> Mallarapu Yaswanth</p>
+        <p class="role-title">AI & Computer Vision Engineer</p>
+        <div class="contact-details">
+          <p>Built with MediaPipe, Web Speech API, and HTML5 Browser Vision APIs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div id="modal-privacy" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" class="close-modal">&times;</button>
+      <h2>Privacy Policy</h2>
+      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
+        Your privacy is completely protected. All camera video processing occurs strictly on your local device within the client web browser. No video, audio, or spatial tracking data is uploaded, recorded, or transmitted to any remote servers.
+      </p>
+    </div>
+  </div>
+
+  <!-- Medical Disclaimer Modal -->
+  <div id="modal-disclaimer" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" class="close-modal">&times;</button>
+      <h2>Medical Disclaimer</h2>
+      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
+        This web application is intended for fitness tracking and wellness support only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider before beginning any physical therapy or neck exercise routine.
+      </p>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
