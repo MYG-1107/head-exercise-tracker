@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function capturePhoto(label = 'Manual') {
-    if (!isCameraActive || !videoElement.videoWidth) return;
+    if (!isCameraActive || !videoElement || !videoElement.videoWidth || !photoCanvas) return;
 
     const ctx = photoCanvas.getContext('2d');
     photoCanvas.width = videoElement.videoWidth;
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const dataUrl = photoCanvas.toDataURL('image/jpeg', 0.85);
 
-    commandDisplay.innerText = '☁️ Uploading photo to Cloudinary...';
+    if (commandDisplay) commandDisplay.innerText = '☁️ Uploading photo to Cloudinary...';
 
     const cloudinaryUrl = await uploadToCloudinary(dataUrl, label);
     const photoUrl = cloudinaryUrl || dataUrl; // Use Cloudinary URL if available, fallback to local base64
@@ -156,18 +156,21 @@ document.addEventListener('DOMContentLoaded', () => {
     capturedPhotos.unshift(photoItem);
     updateGalleryUI();
 
-    if (cloudinaryUrl) {
-      commandDisplay.innerText = `Uploaded to Cloudinary! Total Reps: ${repetitionCount}`;
-    } else {
-      commandDisplay.innerText = `Saved locally (Cloudinary config needed). Reps: ${repetitionCount}`;
+    if (commandDisplay) {
+      if (cloudinaryUrl) {
+        commandDisplay.innerText = `Uploaded to Cloudinary! Total Reps: ${repetitionCount}`;
+      } else {
+        commandDisplay.innerText = `Saved locally (Cloudinary config needed). Reps: ${repetitionCount}`;
+      }
     }
   }
 
   function updateGalleryUI() {
-    photoCountSpan.innerText = capturedPhotos.length;
+    if (photoCountSpan) photoCountSpan.innerText = capturedPhotos.length;
+    if (!galleryContainer) return;
 
     if (capturedPhotos.length === 0) {
-      galleryContainer.innerHTML = '<p class="empty-msg">No snapshots taken yet. Click "📸 Take Screenshot" or perform an exercise movement!</p>';
+      galleryContainer.innerHTML = '<p class="empty-msg">No snapshots taken yet. Perform an exercise movement to automatically upload!</p>';
       return;
     }
 
@@ -194,14 +197,16 @@ document.addEventListener('DOMContentLoaded', () => {
     updateGalleryUI();
   };
 
-  capturePhotoBtn.addEventListener('click', () => {
-    capturePhoto('Manual');
-  });
+  if (capturePhotoBtn) {
+    capturePhotoBtn.addEventListener('click', () => {
+      capturePhoto('Manual');
+    });
+  }
 
   // --- 4. MEDIAPIPE FACE MESH (POSE + EXPRESSION TRACKING) ---
   function onResults(results) {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-      expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
+      if (expressionDisplay) expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
       return;
     }
 
@@ -258,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (currentDirection !== 'CENTER') {
         repetitionCount++;
-        commandDisplay.innerText = `Repetitions Completed: ${repetitionCount}`;
+        if (commandDisplay) commandDisplay.innerText = `Repetitions Completed: ${repetitionCount}`;
         speak(currentDirection.toLowerCase());
         centerHoldStartTime = null;
 
@@ -269,7 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    expressionDisplay.innerHTML = `Head Pose: <span>${currentDirection}</span> | Expression: <span>${currentExpression}</span>`;
+    if (expressionDisplay) {
+      expressionDisplay.innerHTML = `Head Pose: <span>${currentDirection}</span> | Expression: <span>${currentExpression}</span>`;
+    }
 
     if (currentDirection === 'CENTER' && centerHoldStartTime) {
       const elapsedSeconds = Math.floor((Date.now() - centerHoldStartTime) / 1000);
@@ -285,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
       videoElement.srcObject = cameraStream;
-      overlayElement.style.display = 'none';
+      if (overlayElement) overlayElement.style.display = 'none';
 
       if (!faceMesh) {
         faceMesh = new FaceMesh({
@@ -314,10 +321,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       isCameraActive = true;
-      toggleCamBtn.innerText = 'Turn Camera Off';
-      toggleCamBtn.style.backgroundColor = '#333333';
-      capturePhotoBtn.disabled = false;
-      commandDisplay.innerText = 'Repetitions Completed: 0';
+      if (toggleCamBtn) {
+        toggleCamBtn.innerText = 'Turn Camera Off';
+        toggleCamBtn.style.backgroundColor = '#333333';
+      }
+      if (capturePhotoBtn) capturePhotoBtn.disabled = false;
+      if (commandDisplay) commandDisplay.innerText = 'Repetitions Completed: 0';
       speak('Camera activated. Follow direction prompts.');
 
     } catch (err) {
@@ -333,22 +342,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cameraUtils) {
       cameraUtils.stop();
     }
-    videoElement.srcObject = null;
-    overlayElement.style.display = 'flex';
+    if (videoElement) videoElement.srcObject = null;
+    if (overlayElement) overlayElement.style.display = 'flex';
     isCameraActive = false;
-    toggleCamBtn.innerText = 'Turn Camera On';
-    toggleCamBtn.style.backgroundColor = '#D02B2B';
-    capturePhotoBtn.disabled = true;
-    expressionDisplay.innerHTML = 'Head Pose: <span>Stopped</span> | Expression: <span>--</span>';
-    commandDisplay.innerText = 'Press "Turn Camera On" to start';
+    if (toggleCamBtn) {
+      toggleCamBtn.innerText = 'Turn Camera On';
+      toggleCamBtn.style.backgroundColor = '#D02B2B';
+    }
+    if (capturePhotoBtn) capturePhotoBtn.disabled = true;
+    if (expressionDisplay) expressionDisplay.innerHTML = 'Head Pose: <span>Stopped</span> | Expression: <span>--</span>';
+    if (commandDisplay) commandDisplay.innerText = 'Press "Turn Camera On" to start';
     setActiveBadge('CENTER');
   }
 
-  toggleCamBtn.addEventListener('click', () => {
-    if (isCameraActive) {
-      stopCamera();
-    } else {
-      startCamera();
-    }
-  });
+  if (toggleCamBtn) {
+    toggleCamBtn.addEventListener('click', () => {
+      if (isCameraActive) {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    });
+  }
 });
