@@ -6,7 +6,7 @@
   <title>Head Exercise Tracker | AI-Powered Movement Tracking</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- MediaPipe Libraries for AI Head & Expression Tracking -->
+  <!-- MediaPipe Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
@@ -21,20 +21,20 @@
       <nav class="nav-links">
         <a href="#" id="link-how-it-works" class="nav-item">How It Works</a>
         <a href="#" id="link-about" class="nav-item">About</a>
-        <a href="#" id="link-developer" class="nav-item">Developer</a>
-        <a href="#" id="link-privacy" class="nav-item">Privacy </a>
+        <a href="#" id="link-developer" class="nav-item">Contact Developer</a>
+        <a href="#" id="link-privacy" class="nav-item">Privacy Policy</a>
       </nav>
     </div>
   </header>
 
-  <!-- Main Application Body -->
+  <!-- Main Body -->
   <main class="container">
-    <!-- Camera Control Button -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
+      <button id="capture-photo-btn" class="secondary-btn" disabled>📸 Take Screenshot</button>
+      <button id="view-gallery-btn" class="secondary-btn">🖼️ Photos (<span id="photo-count">0</span>)</button>
     </div>
 
-    <!-- Direction Badges -->
     <div class="badge-container">
       <div class="badge-row">
         <span class="badge" id="badge-up">↑ UP</span>
@@ -49,20 +49,23 @@
       </div>
     </div>
 
-    <!-- Video Frame -->
+    <!-- Video Container -->
     <div class="video-container">
       <video id="webcam" autoplay playsinline muted></video>
       <div id="camera-off-overlay">Camera is Off</div>
     </div>
 
-    <!-- Status & Expression Output Card -->
+    <!-- Hidden Canvas for Photo Capture -->
+    <canvas id="photo-canvas" style="display: none;"></canvas>
+
+    <!-- Status Output Card -->
     <div class="status-card">
       <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
       <p id="command-display">Repetitions Completed: 0</p>
     </div>
   </main>
 
-  <!-- Footer Navigation -->
+  <!-- Footer -->
   <footer class="app-footer">
     <div class="footer-container">
       <p>&copy; 2026 Head Exercise Tracker. Developed by <strong>Mallarapu Yaswanth</strong>.</p>
@@ -76,6 +79,16 @@
   </footer>
 
   <!-- MODALS -->
+  <div id="modal-gallery" class="modal-overlay">
+    <div class="modal-card gallery-modal">
+      <button class="modal-close">&times;</button>
+      <h2>Captured Screenshots</h2>
+      <div id="gallery-container" class="gallery-grid">
+        <p class="empty-msg">No screenshots captured yet. Turn on the camera and click "Take Screenshot" or complete exercises!</p>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-how-it-works" class="modal-overlay">
     <div class="modal-card">
       <button class="modal-close">&times;</button>
@@ -84,7 +97,7 @@
         <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
         <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete repetition cycles.</li>
-        <li><strong>Summary Hold:</strong> Hold center focus for 5 seconds to get an audio repetition summary.</li>
+        <li><strong>Take Screenshots:</strong> Click "Take Screenshot" to capture picture frames anytime.</li>
       </ol>
     </div>
   </div>
