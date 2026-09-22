@@ -1,4 +1,4 @@
-/* Reset & Lock Full Screen Height */
+/* Reset & Lock Viewport */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,26 +9,26 @@
 html, body {
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Dynamic Viewport Height for Mobile Browsers */
-  overflow: hidden; /* Strictly prevent all scrolling */
+  height: 100dvh; /* Exact viewport height on mobile browsers */
+  overflow: hidden; /* Prevent all scrolling */
   background-color: #F5F5F7;
   color: #1A1A1A;
   display: flex;
   flex-direction: column;
 }
 
-/* Compact Header (Fixed Top) */
+/* Compact Fixed Header */
 .app-header {
   flex-shrink: 0;
   width: 100%;
   background-color: #1A1A1A;
   border-bottom: 3px solid #D02B2B;
-  padding: 10px 20px;
+  padding: 6px 16px;
   z-index: 100;
 }
 
 .header-container {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -41,18 +41,18 @@ html, body {
   text-decoration: none;
   color: #FFFFFF;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
 }
 
 .nav-links {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .nav-item {
   color: #E0E0E0;
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   transition: color 0.2s ease;
 }
@@ -61,22 +61,25 @@ html, body {
   color: #D02B2B;
 }
 
-/* Main Container (Auto Fits Viewport without scrolling) */
+/* Main Container (Fills standard height without overflow) */
 .container {
   flex: 1;
+  min-height: 0; /* Critical flexbox property to allow video scaling */
   width: 100%;
-  max-width: 760px;
+  max-width: 1000px; /* Expanded for wide desktop viewing */
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  gap: 6px;
   box-sizing: border-box;
 }
 
-/* Control Button */
+/* Compact Control Button */
 .controls {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -86,10 +89,10 @@ html, body {
   background-color: #D02B2B;
   color: #FFFFFF;
   border: none;
-  padding: 10px 24px;
-  font-size: 0.95rem;
+  padding: 7px 20px;
+  font-size: 0.88rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -100,10 +103,11 @@ html, body {
 
 /* Compact Direction Badges */
 .badge-container {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .badge-row {
@@ -115,9 +119,9 @@ html, body {
 .badge {
   background-color: #EAEAEA;
   color: #555555;
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 0.8rem;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 0.75rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -125,19 +129,20 @@ html, body {
 .badge.active {
   background-color: #D02B2B;
   color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(208, 43, 43, 0.3);
+  box-shadow: 0 2px 5px rgba(208, 43, 43, 0.3);
 }
 
-/* Video Frame Dynamic Responsive Height */
+/* Dynamic Video Frame (Grows to fill all available viewport space) */
 .video-container {
-  position: relative;
+  flex: 1; /* Automatically expands to take all vertical space */
+  min-height: 0; /* Prevents push-down scrolling */
   width: 100%;
-  max-width: 580px;
-  height: clamp(180px, 36vh, 320px);
+  max-width: 900px; /* Maximized frame width for large screens */
   background-color: #1A1A1A;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -146,7 +151,7 @@ html, body {
 #webcam {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Maximizes face size inside the video frame */
   transform: scaleX(-1);
 }
 
@@ -161,26 +166,27 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
-/* Status & Expression Output Card */
+/* Compact Status Card */
 .status-card {
+  flex-shrink: 0;
   width: 100%;
-  max-width: 580px;
+  max-width: 900px;
   background: #FFFFFF;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 #expression-display {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #1A1A1A;
 }
@@ -190,29 +196,29 @@ html, body {
 }
 
 #command-display {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: #555555;
 }
 
-/* Compact Footer (Fixed Bottom) */
+/* Compact Fixed Footer */
 .app-footer {
   flex-shrink: 0;
   width: 100%;
   background-color: #1A1A1A;
   color: #888888;
-  padding: 10px 16px;
+  padding: 6px 12px;
   border-top: 1px solid #333333;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
 .footer-container {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   text-align: center;
 }
 
@@ -222,7 +228,7 @@ html, body {
 
 .footer-links {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -276,16 +282,16 @@ html, body {
   color: #666666;
 }
 
-/* Mobile & Tablet Responsive Adjustments */
-@media (max-height: 700px), (max-width: 600px) {
-  .app-header { padding: 8px 12px; }
-  .brand-logo { font-size: 0.9rem; }
-  .nav-links { gap: 10px; font-size: 0.75rem; }
-  .container { padding: 6px 10px; }
-  #toggle-camera-btn { padding: 8px 18px; font-size: 0.85rem; }
-  .badge { padding: 4px 10px; font-size: 0.75rem; }
-  .video-container { height: clamp(140px, 30vh, 220px); }
-  .status-card { padding: 8px 12px; }
-  #expression-display, #command-display { font-size: 0.85rem; }
-  .app-footer { padding: 6px 10px; font-size: 0.72rem; }
+/* Small Screens / Mobile Adjustments */
+@media (max-width: 600px) {
+  .app-header { padding: 5px 10px; }
+  .brand-logo { font-size: 0.85rem; }
+  .nav-links { gap: 8px; font-size: 0.7rem; }
+  .container { padding: 4px 8px; gap: 4px; }
+  #toggle-camera-btn { padding: 6px 16px; font-size: 0.8rem; }
+  .badge { padding: 2px 8px; font-size: 0.7rem; }
+  .status-card { padding: 6px 10px; }
+  #expression-display { font-size: 0.82rem; }
+  #command-display { font-size: 0.75rem; }
+  .app-footer { padding: 4px 8px; font-size: 0.68rem; }
 }
