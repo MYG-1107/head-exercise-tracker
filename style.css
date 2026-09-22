@@ -9,8 +9,8 @@
 html, body {
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Exact viewport height on mobile browsers */
-  overflow: hidden; /* Prevent all scrolling */
+  height: 100dvh;
+  overflow: hidden;
   background-color: #F5F5F7;
   color: #1A1A1A;
   display: flex;
@@ -61,12 +61,12 @@ html, body {
   color: #D02B2B;
 }
 
-/* Main Container (Fills standard height without overflow) */
+/* Main Container */
 .container {
   flex: 1;
-  min-height: 0; /* Critical flexbox property to allow video scaling */
+  min-height: 0;
   width: 100%;
-  max-width: 1000px; /* Expanded for wide desktop viewing */
+  max-width: 1000px;
   margin: 0 auto;
   padding: 8px 12px;
   display: flex;
@@ -77,19 +77,21 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Compact Control Button */
+/* Control Buttons Area */
 .controls {
   flex-shrink: 0;
   display: flex;
   justify-content: center;
+  gap: 8px;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 #toggle-camera-btn {
   background-color: #D02B2B;
   color: #FFFFFF;
   border: none;
-  padding: 7px 20px;
+  padding: 7px 18px;
   font-size: 0.88rem;
   font-weight: 600;
   border-radius: 6px;
@@ -99,6 +101,27 @@ html, body {
 
 #toggle-camera-btn:hover {
   background-color: #B02020;
+}
+
+.secondary-btn {
+  background-color: #333333;
+  color: #FFFFFF;
+  border: none;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background-color: #555555;
 }
 
 /* Compact Direction Badges */
@@ -132,12 +155,12 @@ html, body {
   box-shadow: 0 2px 5px rgba(208, 43, 43, 0.3);
 }
 
-/* Dynamic Video Frame (Grows to fill all available viewport space) */
+/* Dynamic Maximized Video Frame */
 .video-container {
-  flex: 1; /* Automatically expands to take all vertical space */
-  min-height: 0; /* Prevents push-down scrolling */
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  max-width: 900px; /* Maximized frame width for large screens */
+  max-width: 900px;
   background-color: #1A1A1A;
   border-radius: 12px;
   overflow: hidden;
@@ -151,7 +174,7 @@ html, body {
 #webcam {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Maximizes face size inside the video frame */
+  object-fit: cover;
   transform: scaleX(-1);
 }
 
@@ -170,7 +193,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Compact Status Card */
+/* Status Card */
 .status-card {
   flex-shrink: 0;
   width: 100%;
@@ -271,6 +294,10 @@ html, body {
   overflow-y: auto;
 }
 
+.gallery-modal {
+  max-width: 700px;
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -282,13 +309,72 @@ html, body {
   color: #666666;
 }
 
-/* Small Screens / Mobile Adjustments */
+/* Gallery Grid Styling */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.empty-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #777777;
+  padding: 20px;
+  font-size: 0.9rem;
+}
+
+.photo-card {
+  background: #F0F0F0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.photo-card-info {
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  color: #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.photo-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.photo-btn {
+  background: #D02B2B;
+  color: #fff;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.photo-btn.download {
+  background: #28a745;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 600px) {
   .app-header { padding: 5px 10px; }
   .brand-logo { font-size: 0.85rem; }
   .nav-links { gap: 8px; font-size: 0.7rem; }
   .container { padding: 4px 8px; gap: 4px; }
-  #toggle-camera-btn { padding: 6px 16px; font-size: 0.8rem; }
+  #toggle-camera-btn, .secondary-btn { padding: 5px 12px; font-size: 0.78rem; }
   .badge { padding: 2px 8px; font-size: 0.7rem; }
   .status-card { padding: 6px 10px; }
   #expression-display { font-size: 0.82rem; }
