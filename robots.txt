@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://myg-1107.github.io/head-exercise-tracker/sitemap.xml
