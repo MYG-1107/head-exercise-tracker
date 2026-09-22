@@ -12,46 +12,55 @@
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Head Exercise App</title>
+  <title>Head Exercise Tracker</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- MediaPipe FaceMesh & Camera Utils -->
+  <!-- MediaPipe dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <div class="app-container">
+  <div class="container">
     <h1>Head Exercise Tracker</h1>
-    
-    <!-- Camera Controls -->
-    <div class="control-panel">
-      <button id="toggle-camera-btn" class="btn btn-danger">🔴 Turn Camera Off</button>
+
+    <!-- How It Works Section -->
+    <div class="instructions-card">
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
+        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided by the audio prompts.</li>
+        <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
+        <li><strong>Hold Center for Summary:</strong> Face forward at the center for <strong>5 seconds</strong> to hear your completed repetition count.</li>
+      </ol>
     </div>
 
-    <!-- Directional Arrow Indicators -->
-    <div class="direction-grid">
-      <div id="dir-up" class="dir-badge">⬆️ UP</div>
-      <div class="middle-row">
-        <div id="dir-left" class="dir-badge">⬅️ LEFT</div>
-        <div id="dir-center" class="dir-badge active">🎯 CENTER</div>
-        <div id="dir-right" class="dir-badge">➡️ RIGHT</div>
+    <!-- Controls -->
+    <div class="controls">
+      <button id="toggle-camera-btn">Turn Camera On</button>
+    </div>
+
+    <!-- Direction Badges -->
+    <div class="badge-container">
+      <span class="badge" id="dir-up">⬆ UP</span>
+      <div class="badge-row">
+        <span class="badge" id="dir-left">⬅ LEFT</span>
+        <span class="badge active" id="dir-center">🎯 CENTER</span>
+        <span class="badge" id="dir-right">➡ RIGHT</span>
       </div>
-      <div id="dir-down" class="dir-badge">⬇️ DOWN</div>
+      <span class="badge" id="dir-down">⬇ DOWN</span>
     </div>
 
-    <!-- Video Feed Container -->
-    <div class="video-wrapper">
+    <!-- Video Container -->
+    <div class="video-container">
       <video id="webcam" autoplay playsinline muted></video>
-      <div id="camera-off-overlay" class="overlay hidden">
-        <span>Camera is turned OFF</span>
-      </div>
+      <div id="camera-off-overlay">Camera Offline</div>
+      <canvas id="snapshot-canvas" style="display: none;"></canvas>
     </div>
 
-    <!-- Stats, Expression & Feeling Card -->
-    <div class="stats-card">
-      <div id="expression-display" class="expression-badge">Feeling: Detecting...</div>
-      <div id="command-display">Tracking movement...</div>
-      <div class="rep-counter">Reps Completed: <span id="rep-count">0</span></div>
+    <!-- Live Status Card -->
+    <div class="status-card">
+      <div id="expression-display">😐 Neutral — Focused & calm</div>
+      <h3 id="command-display">CURRENT DIRECTION: CENTER</h3>
+      <p>Reps Completed: <strong id="rep-count">0</strong></p>
     </div>
   </div>
 
