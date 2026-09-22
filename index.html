@@ -1,68 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GMX9HS0Y8T"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-GMX9HS0Y8T');
-</script>
+  <!-- Primary Meta Tags -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Head Exercise Tracker</title>
+  <title>Head Exercise Tracker | AI-Powered Motion & Neck Rehab Tracker</title>
+  <meta name="title" content="Head Exercise Tracker | AI-Powered Motion & Neck Rehab Tracker">
+  <meta name="description" content="Free browser-based head and neck exercise tracker using AI computer vision. Track repetitions, receive real-time voice prompts, and improve neck mobility with interactive guidance.">
+  <meta name="keywords" content="head exercise tracker, neck exercise online, AI posture tracker, computer vision workout, neck mobility rehab, web-based exercise counter, mediapipe face mesh">
+  <meta name="author" content="Head Exercise Tracker">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://myg-1107.github.io/head-exercise-tracker/">
+
+  <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://myg-1107.github.io/head-exercise-tracker/">
+  <meta property="og:title" content="Head Exercise Tracker | Real-Time AI Movement Guidance">
+  <meta property="og:description" content="Track your head exercises and neck repetitions in real time directly in your browser with AI voice feedback. No downloads required.">
+  <meta property="og:image" content="https://myg-1107.github.io/head-exercise-tracker/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://myg-1107.github.io/head-exercise-tracker/">
+  <meta property="twitter:title" content="Head Exercise Tracker | AI Motion Tracker">
+  <meta property="twitter:description" content="Interactive head exercise counter with real-time audio prompts powered by AI computer vision.">
+  <meta property="twitter:image" content="https://myg-1107.github.io/head-exercise-tracker/og-image.png">
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css?v=1.2">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GMX9HS0Y8T"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-GMX9HS0Y8T');
+  </script>
+
+  <!-- MediaPipe Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+  <!-- Structured Data (JSON-LD) for Search Engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Head Exercise Tracker",
+    "url": "https://myg-1107.github.io/head-exercise-tracker/",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "All browsers",
+    "description": "An interactive web app that tracks head movements and neck exercise repetitions using computer vision and voice commands.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
 </head>
-<body>
-  <div class="container">
-    <h1>Head Exercise Tracker</h1>
-
-    <!-- How It Works Card -->
-    <div class="instructions-card">
-      <h2>How It Works</h2>
-      <ol>
-        <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
-        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided by the audio prompts.</li>
-        <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
-        <li><strong>Hold Center for Summary:</strong> Face forward at the center for <strong>5 seconds</strong> to hear your completed repetition count.</li>
-      </ol>
-    </div>
-
-    <!-- Camera Control -->
-    <div class="controls">
-      <button id="toggle-camera-btn">Turn Camera On</button>
-    </div>
-
-    <!-- Direction Indicators -->
-    <div class="badge-container">
-      <span class="badge" id="dir-up">⬆ UP</span>
-      <div class="badge-row">
-        <span class="badge" id="dir-left">⬅ LEFT</span>
-        <span class="badge active" id="dir-center">🎯 CENTER</span>
-        <span class="badge" id="dir-right">➡ RIGHT</span>
-      </div>
-      <span class="badge" id="dir-down">⬇ DOWN</span>
-    </div>
-
-    <!-- Video Feed Container -->
-    <div class="video-container">
-      <video id="webcam" autoplay playsinline muted></video>
-      <div id="camera-off-overlay">Camera Offline</div>
-      <canvas id="snapshot-canvas" style="display: none;"></canvas>
-    </div>
-
-    <!-- Live Status Summary -->
-    <div class="status-card">
-      <div id="expression-display">😐 Neutral — Focused & calm</div>
-      <h3 id="command-display">CURRENT DIRECTION: CENTER</h3>
-      <p>Reps Completed: <strong id="rep-count">0</strong></p>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
