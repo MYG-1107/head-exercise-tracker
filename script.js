@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // ==========================================
+  // ☁️ CLOUDINARY CONFIGURATION
+  // Replace these credentials with your Cloudinary details
+  // ==========================================
+  const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';       // e.g., 'my-cloud-123'
+  const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET'; // Unsigned upload preset name
+
   // --- 1. MODAL NAVIGATION SYSTEM ---
   const modalTriggers = [
     { triggerIds: ['link-how-it-works'], modalId: 'modal-how-it-works' },
@@ -89,8 +96,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 3. PHOTO CAPTURE & GALLERY MANAGEMENT ---
-  function capturePhoto(label = 'Manual') {
+  // --- 3. CLOUDINARY UPLOAD LOGIC ---
+  async function uploadToCloudinary(base64Image, label) {
+    if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME' || CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET') {
+      console.warn('Cloudinary credentials not set. Falling back to local display.');
+      return null;
+    }
+
+    const formData = new FormData();
+    formData.append('file', base64Image);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('tags', `head_exercise,${label.toLowerCase()}`);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Cloudinary upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.secure_url; // Cloudinary Hosted Image URL
+    } catch (error) {
+      console.error('Cloudinary Upload Error:', error);
+      return null;
+    }
+  }
+
+  async function capturePhoto(label = 'Manual') {
     if (!isCameraActive || !videoElement.videoWidth) return;
 
     const ctx = photoCanvas.getContext('2d');
@@ -102,33 +138,50 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.scale(-1, 1);
     ctx.drawImage(videoElement, 0, 0, photoCanvas.width, photoCanvas.height);
 
-    const dataUrl = photoCanvas.toDataURL('image/png');
+    const dataUrl = photoCanvas.toDataURL('image/jpeg', 0.85);
+
+    commandDisplay.innerText = '☁️ Uploading photo to Cloudinary...';
+
+    const cloudinaryUrl = await uploadToCloudinary(dataUrl, label);
+    const photoUrl = cloudinaryUrl || dataUrl; // Use Cloudinary URL if available, fallback to local base64
+
     const photoItem = {
       id: Date.now(),
-      url: dataUrl,
+      url: photoUrl,
+      isCloudinary: !!cloudinaryUrl,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       info: `${currentDirection} | ${currentExpression}`
     };
 
     capturedPhotos.unshift(photoItem);
     updateGalleryUI();
+
+    if (cloudinaryUrl) {
+      commandDisplay.innerText = `Uploaded to Cloudinary! Total Reps: ${repetitionCount}`;
+    } else {
+      commandDisplay.innerText = `Saved locally (Cloudinary config needed). Reps: ${repetitionCount}`;
+    }
   }
 
   function updateGalleryUI() {
     photoCountSpan.innerText = capturedPhotos.length;
 
     if (capturedPhotos.length === 0) {
-      galleryContainer.innerHTML = '<p class="empty-msg">No screenshots captured yet. Turn on the camera and click "Take Screenshot" or complete exercises!</p>';
+      galleryContainer.innerHTML = '<p class="empty-msg">No snapshots taken yet. Click "📸 Take Screenshot" or perform an exercise movement!</p>';
       return;
     }
 
     galleryContainer.innerHTML = capturedPhotos.map(photo => `
       <div class="photo-card" id="photo-${photo.id}">
-        <img src="${photo.url}" alt="Screenshot ${photo.timestamp}" />
+        <a href="${photo.url}" target="_blank" title="View full size image">
+          <img src="${photo.url}" alt="Screenshot ${photo.timestamp}" />
+        </a>
         <div class="photo-card-info">
           <span>${photo.info}</span>
           <div class="photo-card-actions">
-            <a href="${photo.url}" download="head-exercise-${photo.id}.png" class="photo-btn download">💾</a>
+            <a href="${photo.url}" target="_blank" download="head-exercise-${photo.id}.jpg" class="photo-btn download">
+              ${photo.isCloudinary ? '☁️ Link' : '💾 Save'}
+            </a>
             <button class="photo-btn delete" onclick="deletePhoto(${photo.id})">🗑️</button>
           </div>
         </div>
@@ -145,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     capturePhoto('Manual');
   });
 
-  // --- 4. MEDIAPIPE FACE MESH (POSE + EXPRESSION + AUTO-CAPTURE) ---
+  // --- 4. MEDIAPIPE FACE MESH (POSE + EXPRESSION TRACKING) ---
   function onResults(results) {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
@@ -162,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mouthCornerLeft = landmarks[61];
     const mouthCornerRight = landmarks[291];
 
-    // Head Pose
+    // Head Pose calculations
     const eyeCenterY = (leftEye.y + rightEye.y) / 2;
     const noseVerticalOffset = nose.y - eyeCenterY;
     const noseHorizontalOffset = nose.x - ((leftEye.x + rightEye.x) / 2);
@@ -179,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detectedDir = 'RIGHT';
     }
 
-    // Facial Expression
+    // Facial Expression calculations
     const mouthHeight = distance(upperLipInner, lowerLipInner);
     const mouthWidth = distance(mouthCornerLeft, mouthCornerRight);
     const faceWidth = distance(leftEye, rightEye);
@@ -209,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
         speak(currentDirection.toLowerCase());
         centerHoldStartTime = null;
 
-        // Auto Snapshot on Repetition Completion
-        capturePhoto('Auto-Rep');
+        // Auto snapshot on movement trigger
+        capturePhoto('Auto-Movement');
       } else {
         centerHoldStartTime = Date.now();
       }
@@ -227,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 5. CAMERA CONTROL FUNCTIONS ---
+  // --- 5. CAMERA CONTROL ---
   async function startCamera() {
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
