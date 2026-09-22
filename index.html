@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Head Exercise Tracker | AI-Powered Movement Tracking</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- MediaPipe Libraries for AI Head Tracking -->
+  <!-- MediaPipe Libraries for AI Head & Expression Tracking -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
@@ -29,7 +29,7 @@
 
   <!-- Main Application Body -->
   <main class="container">
-    <!-- Control Button -->
+    <!-- Camera Control Button -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
     </div>
@@ -55,10 +55,10 @@
       <div id="camera-off-overlay">Camera is Off</div>
     </div>
 
-    <!-- Status Output -->
+    <!-- Status & Expression Output Card -->
     <div class="status-card">
-      <p id="expression-display">Status: Ready</p>
-      <p id="command-display">Press "Turn Camera On" to start exercise tracking</p>
+      <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
+      <p id="command-display">Repetitions Completed: 0</p>
     </div>
   </main>
 
@@ -76,65 +76,54 @@
   </footer>
 
   <!-- MODALS -->
-
-  <!-- How It Works Modal -->
   <div id="modal-how-it-works" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" class="close-modal">&times;</button>
+      <button class="modal-close">&times;</button>
       <h2>How It Works</h2>
-      <ol style="margin-top: 16px; padding-left: 20px; line-height: 1.8; color: #444444;">
-        <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
-        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided.</li>
-        <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
-        <li><strong>Hold Center for Summary:</strong> Hold center focus for <strong>5 seconds</strong> to hear your repetition summary.</li>
+      <ol style="margin-top: 12px; padding-left: 20px; line-height: 1.6; color: #444444;">
+        <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
+        <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
+        <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete repetition cycles.</li>
+        <li><strong>Summary Hold:</strong> Hold center focus for 5 seconds to get an audio repetition summary.</li>
       </ol>
     </div>
   </div>
 
-  <!-- About Modal -->
   <div id="modal-about" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" class="close-modal">&times;</button>
+      <button class="modal-close">&times;</button>
       <h2>About Head Exercise Tracker</h2>
-      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
-        Head Exercise Tracker is a web-based artificial intelligence tool designed to assist with neck mobility, physical therapy, and ergonomic posture breaks. Using real-time computer vision landmark detection directly inside your browser, no video data is sent to any server.
+      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
+        A real-time computer vision application for neck exercise, posture correction, and facial mobility feedback operating entirely inside your web browser.
       </p>
     </div>
   </div>
 
-  <!-- Contact Developer Modal -->
   <div id="modal-developer" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" class="close-modal">&times;</button>
+      <button class="modal-close">&times;</button>
       <h2>Developer Information</h2>
-      <div class="developer-profile" style="margin-top: 16px;">
-        <p><strong>Lead Architect:</strong> Mallarapu Yaswanth</p>
-        <p class="role-title">AI & Computer Vision Engineer</p>
-        <div class="contact-details">
-          <p>Built with MediaPipe, Web Speech API, and HTML5 Browser Vision APIs.</p>
-        </div>
-      </div>
+      <p style="margin-top: 10px;"><strong>Developer:</strong> Mallarapu Yaswanth</p>
+      <p style="color: #D02B2B; font-weight: 600;">AI & Computer Vision Developer</p>
     </div>
   </div>
 
-  <!-- Privacy Policy Modal -->
   <div id="modal-privacy" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" class="close-modal">&times;</button>
+      <button class="modal-close">&times;</button>
       <h2>Privacy Policy</h2>
-      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
-        Your privacy is completely protected. All camera video processing occurs strictly on your local device within the client web browser. No video, audio, or spatial tracking data is uploaded, recorded, or transmitted to any remote servers.
+      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
+        100% Client-Side Privacy: Camera feeds and facial landmark data are calculated locally in your browser and are never saved or sent to any cloud server.
       </p>
     </div>
   </div>
 
-  <!-- Medical Disclaimer Modal -->
   <div id="modal-disclaimer" class="modal-overlay">
     <div class="modal-card">
-      <button class="modal-close" class="close-modal">&times;</button>
+      <button class="modal-close">&times;</button>
       <h2>Medical Disclaimer</h2>
-      <p style="margin-top: 12px; line-height: 1.6; color: #444444;">
-        This web application is intended for fitness tracking and wellness support only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider before beginning any physical therapy or neck exercise routine.
+      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
+        This tool is intended for personal posture breaks and general neck fitness. Consult a healthcare professional before conducting physical therapy exercises.
       </p>
     </div>
   </div>
