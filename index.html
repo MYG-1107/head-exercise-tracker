@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <!-- Primary Meta Tags -->
   <meta charset="UTF-8">
@@ -59,3 +61,52 @@
   }
   </script>
 </head>
+<body>
+  <div class="container">
+    <h1>Head Exercise Tracker</h1>
+
+    <!-- How It Works Section -->
+    <div class="instructions-card">
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Enable Camera:</strong> Click "Turn Camera On" and grant browser permissions.</li>
+        <li><strong>Follow Direction Prompts:</strong> Move your head <strong>UP</strong>, <strong>DOWN</strong>, <strong>LEFT</strong>, or <strong>RIGHT</strong> as guided by the audio prompts.</li>
+        <li><strong>Track Repetitions:</strong> Complete full movement cycles to register repetitions.</li>
+        <li><strong>Hold Center for Summary:</strong> Face forward at the center for <strong>5 seconds</strong> to hear your completed repetition count.</li>
+      </ol>
+    </div>
+
+    <!-- Camera Control -->
+    <div class="controls">
+      <button id="toggle-camera-btn">Turn Camera On</button>
+    </div>
+
+    <!-- Direction Indicators -->
+    <div class="badge-container">
+      <span class="badge" id="dir-up">⬆ UP</span>
+      <div class="badge-row">
+        <span class="badge" id="dir-left">⬅ LEFT</span>
+        <span class="badge active" id="dir-center">🎯 CENTER</span>
+        <span class="badge" id="dir-right">➡ RIGHT</span>
+      </div>
+      <span class="badge" id="dir-down">⬇ DOWN</span>
+    </div>
+
+    <!-- Video Container -->
+    <div class="video-container">
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="camera-off-overlay">Camera Offline</div>
+      <canvas id="snapshot-canvas" style="display: none;"></canvas>
+    </div>
+
+    <!-- Status Card -->
+    <div class="status-card">
+      <div id="expression-display">😐 Neutral — Focused & calm</div>
+      <h3 id="command-display">CURRENT DIRECTION: CENTER</h3>
+      <p>Reps Completed: <strong id="rep-count">0</strong></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
