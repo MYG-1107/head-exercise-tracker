@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Dark Background Badge -->
+  <rect width="512" height="512" rx="120" fill="#1A1A1A"/>
+  
+  <!-- Motion Tracking Arc Ring -->
+  <circle cx="256" cy="256" r="155" fill="none" stroke="#D02B2B" stroke-width="14" stroke-dasharray="30 18" opacity="0.9"/>
+  
+  <!-- Central Head & Neck Silhouette -->
+  <circle cx="256" cy="195" r="58" fill="#FFFFFF"/>
+  <path d="M166 335 C166 280 200 265 256 265 C312 265 346 280 346 335 Z" fill="#FFFFFF"/>
+  
+  <!-- Directional Motion Arrows (Red) -->
+  <!-- UP -->
+  <path d="M256 62 L278 92 H234 Z" fill="#D02B2B"/>
+  <!-- DOWN -->
+  <path d="M256 450 L278 420 H234 Z" fill="#D02B2B"/>
+  <!-- LEFT -->
+  <path d="M62 256 L92 234 V278 Z" fill="#D02B2B"/>
+  <!-- RIGHT -->
+  <path d="M450 256 L420 234 V278 Z" fill="#D02B2B"/>
+</svg>
