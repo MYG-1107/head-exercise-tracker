@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ☁️ CLOUDINARY CONFIGURATION
   // Replace these credentials with your Cloudinary details
   // ==========================================
-  const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';       // e.g., 'my-cloud-123'
-  const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UPLOAD_PRESET'; // Unsigned upload preset name
+  const CLOUDINARY_CLOUD_NAME = 'azq6tuq4';       // e.g., 'my-cloud-123'
+  const CLOUDINARY_UPLOAD_PRESET = 'blfvqiv6'; // Unsigned upload preset name
 
   // --- 1. MODAL NAVIGATION SYSTEM ---
   const modalTriggers = [
