@@ -289,6 +289,8 @@ toggleCameraBtn.addEventListener('click', async () => {
       alert('Unable to access webcam. Please check browser permissions.');
     }
   }
+});
+
   // How It Works Modal Logic
 const howItWorksLink = document.getElementById('how-it-works-link');
 const howItWorksModal = document.getElementById('how-it-works-modal');
@@ -310,4 +312,3 @@ if (howItWorksLink && howItWorksModal && closeHowItWorks) {
     }
   });
 }
-});
