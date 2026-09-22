@@ -28,6 +28,81 @@ let repCount = 0;
 let centerTimer = null;
 let cameraUtilsInstance = null;
 
+// Key MediaPipe Face Mesh Landmark Indices
+const L_EYE_OUTER = 33;
+const R_EYE_OUTER = 263;
+
+const MOUTH_TOP = 13;
+const MOUTH_BOTTOM = 14;
+const MOUTH_LEFT = 61;
+const MOUTH_RIGHT = 291;
+
+const L_EYE_TOP = 159;
+const L_EYE_BOTTOM = 145;
+const R_EYE_TOP = 386;
+const R_EYE_BOTTOM = 374;
+
+const L_BROW = 70;
+const R_BROW = 300;
+
+// Helper: Calculate 2D Euclidean Distance
+function getDistance(p1, p2) {
+  return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+}
+
+// Granular Facial Expression Classifier
+function detectExpression(landmarks) {
+  // Normalize measurements against face width to make it distance-independent
+  const faceWidth = getDistance(landmarks[L_EYE_OUTER], landmarks[R_EYE_OUTER]);
+  
+  if (faceWidth === 0) return { emoji: "😐", text: "Neutral — Focused & calm" };
+
+  // Calculate Feature Ratios
+  const mouthHeight = getDistance(landmarks[MOUTH_TOP], landmarks[MOUTH_BOTTOM]) / faceWidth;
+  const mouthWidth = getDistance(landmarks[MOUTH_LEFT], landmarks[MOUTH_RIGHT]) / faceWidth;
+  
+  const leftEyeOpen = getDistance(landmarks[L_EYE_TOP], landmarks[L_EYE_BOTTOM]) / faceWidth;
+  const rightEyeOpen = getDistance(landmarks[R_EYE_TOP], landmarks[R_EYE_BOTTOM]) / faceWidth;
+  const avgEyeOpen = (leftEyeOpen + rightEyeOpen) / 2;
+
+  const leftBrowHeight = getDistance(landmarks[L_BROW], landmarks[L_EYE_TOP]) / faceWidth;
+  const rightBrowHeight = getDistance(landmarks[R_BROW], landmarks[R_EYE_TOP]) / faceWidth;
+  const avgBrowHeight = (leftBrowHeight + rightBrowHeight) / 2;
+
+  const mouthAspectRatio = mouthHeight / mouthWidth;
+
+  // Expression Rules
+  if (avgEyeOpen < 0.04) {
+    return { emoji: "😴", text: "Eyes Closed — Deep Relaxation" };
+  }
+  
+  if (leftEyeOpen < 0.04 && rightEyeOpen > 0.08) {
+    return { emoji: "😉", text: "Left Wink — Eye Focus" };
+  }
+  
+  if (rightEyeOpen < 0.04 && leftEyeOpen > 0.08) {
+    return { emoji: "😉", text: "Right Wink — Eye Focus" };
+  }
+
+  if (mouthHeight > 0.35 && avgBrowHeight > 0.18) {
+    return { emoji: "😲", text: "Surprised — High Engagement" };
+  }
+
+  if (mouthHeight > 0.22) {
+    return { emoji: "😮", text: "Mouth Open — Deep Breathing" };
+  }
+
+  if (mouthWidth > 0.48 && mouthAspectRatio < 0.38) {
+    return { emoji: "😊", text: "Smiling — Warmed Up & Happy" };
+  }
+
+  if (avgEyeOpen < 0.075 && avgBrowHeight < 0.12) {
+    return { emoji: "🤨", text: "Concentrating — Intense Focus" };
+  }
+
+  return { emoji: "😐", text: "Neutral — Focused & Calm" };
+}
+
 // Audio Speech Helper
 function speak(text) {
   if ('speechSynthesis' in window) {
@@ -134,9 +209,22 @@ faceMesh.setOptions({
 });
 
 faceMesh.onResults((results) => {
-  if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+  if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+    if (expressionDisplay) {
+      expressionDisplay.innerText = "👤 Face Not Detected";
+    }
+    return;
+  }
 
   const landmarks = results.multiFaceLandmarks[0];
+
+  // 1. Detect & Update Facial Expression UI
+  const expr = detectExpression(landmarks);
+  if (expressionDisplay) {
+    expressionDisplay.innerText = `${expr.emoji} ${expr.text}`;
+  }
+
+  // 2. Head Direction Movement Analysis
   const nose = landmarks[1];
   const leftEar = landmarks[234];
   const rightEar = landmarks[454];
