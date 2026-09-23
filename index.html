@@ -29,8 +29,11 @@
 
   <!-- Main Body -->
   <main class="container">
+    <!-- Controls with New Add-on Buttons -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
+      <button id="toggle-audio-btn" class="secondary-btn">🔊 Voice On</button>
+      <button id="view-gallery-btn" class="secondary-btn">🖼️ Photos (<span id="photo-count">0</span>)</button>
     </div>
 
     <div class="badge-container">
@@ -56,10 +59,19 @@
     <!-- Hidden Canvas for Photo Capture -->
     <canvas id="photo-canvas" style="display: none;"></canvas>
 
-    <!-- Status Output Card -->
+    <!-- Status Output Card with New Timer & Goal Progress Bar -->
     <div class="status-card">
-      <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
-      <p id="command-display">Repetitions Completed: 0</p>
+      <div class="status-meta">
+        <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
+        <p id="timer-display">Session Time: <span>00:00</span></p>
+      </div>
+
+      <!-- Visual Progress Bar Add-on -->
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-fill"></div>
+      </div>
+
+      <p id="command-display">Repetitions Completed: 0 / 10</p>
     </div>
   </main>
 
@@ -82,7 +94,7 @@
       <button class="modal-close">&times;</button>
       <h2>Captured & Uploaded Photos</h2>
       <div id="gallery-container" class="gallery-grid">
-        <p class="empty-msg">No snapshots taken yet. Click "📸 Take Screenshot" or perform an exercise movement!</p>
+        <p class="empty-msg">No snapshots taken yet. Perform an exercise movement to automatically upload!</p>
       </div>
     </div>
   </div>
@@ -94,8 +106,9 @@
       <ol style="margin-top: 12px; padding-left: 20px; line-height: 1.6; color: #444444;">
         <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
-        <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete repetition cycles.</li>
-    </ol>
+        <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete your target repetition cycle.</li>
+        <li><strong>Automatic Cloudinary Uploads:</strong> Snapshots are seamlessly sent to Cloudinary as you complete movements.</li>
+      </ol>
     </div>
   </div>
 
@@ -123,7 +136,7 @@
       <button class="modal-close">&times;</button>
       <h2>Privacy Policy</h2>
       <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        Camera feeds and landmark calculations are processed locally. Photos are only uploaded to Cloudinary if configured.
+        Camera feeds and landmark calculations are processed locally. Exercise snapshots are securely saved to Cloudinary.
       </p>
     </div>
   </div>
