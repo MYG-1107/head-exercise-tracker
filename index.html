@@ -29,24 +29,24 @@
 
   <!-- Main Body -->
   <main class="container">
-    <!-- Controls with New Add-on Buttons -->
+    <!-- Controls -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
       <button id="toggle-audio-btn" class="secondary-btn">🔊 Voice On</button>
-      <button id="view-gallery-btn" class="secondary-btn">🖼️ Photos (<span id="photo-count">0</span>)</button>
     </div>
 
+    <!-- Directional Badges with 25 Rep Target Breakdown -->
     <div class="badge-container">
       <div class="badge-row">
-        <span class="badge" id="badge-up">↑ UP</span>
+        <span class="badge" id="badge-up">↑ UP (<span id="count-up">0</span>/25)</span>
       </div>
       <div class="badge-row">
-        <span class="badge" id="badge-left">← LEFT</span>
+        <span class="badge" id="badge-left">← LEFT (<span id="count-left">0</span>/25)</span>
         <span class="badge active" id="badge-center">🎯 CENTER</span>
-        <span class="badge" id="badge-right">→ RIGHT</span>
+        <span class="badge" id="badge-right">→ RIGHT (<span id="count-right">0</span>/25)</span>
       </div>
       <div class="badge-row">
-        <span class="badge" id="badge-down">↓ DOWN</span>
+        <span class="badge" id="badge-down">↓ DOWN (<span id="count-down">0</span>/25)</span>
       </div>
     </div>
 
@@ -56,22 +56,22 @@
       <div id="camera-off-overlay">Camera is Off</div>
     </div>
 
-    <!-- Hidden Canvas for Photo Capture -->
+    <!-- Hidden Canvas for Background Snapshot Process -->
     <canvas id="photo-canvas" style="display: none;"></canvas>
 
-    <!-- Status Output Card with New Timer & Goal Progress Bar -->
+    <!-- Status Output Card -->
     <div class="status-card">
       <div class="status-meta">
         <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
         <p id="timer-display">Session Time: <span>00:00</span></p>
       </div>
 
-      <!-- Visual Progress Bar Add-on -->
+      <!-- Visual Progress Bar -->
       <div class="progress-container">
         <div id="progress-bar" class="progress-fill"></div>
       </div>
 
-      <p id="command-display">Repetitions Completed: 0 / 10</p>
+      <p id="command-display">Repetitions Completed: 0 / 100</p>
     </div>
   </main>
 
@@ -89,16 +89,6 @@
   </footer>
 
   <!-- MODALS -->
-  <div id="modal-gallery" class="modal-overlay">
-    <div class="modal-card gallery-modal">
-      <button class="modal-close">&times;</button>
-      <h2>Captured & Uploaded Photos</h2>
-      <div id="gallery-container" class="gallery-grid">
-        <p class="empty-msg">No snapshots taken yet. Perform an exercise movement to automatically upload!</p>
-      </div>
-    </div>
-  </div>
-
   <div id="modal-how-it-works" class="modal-overlay">
     <div class="modal-card">
       <button class="modal-close">&times;</button>
@@ -106,8 +96,8 @@
       <ol style="margin-top: 12px; padding-left: 20px; line-height: 1.6; color: #444444;">
         <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
-        <li><strong>Track Expression & Reps:</strong> Maintain facial expressions and complete your target repetition cycle.</li>
-        <li><strong>Automatic Cloudinary Uploads:</strong> Snapshots are seamlessly sent to Cloudinary as you complete movements.</li>
+        <li><strong>Target Goal:</strong> Complete 25 repetitions for each direction to reach the 100 total goal.</li>
+        <li><strong>Track Posture & Expression:</strong> Maintain proper neck posture and facial mobility feedback.</li>
       </ol>
     </div>
   </div>
@@ -136,7 +126,7 @@
       <button class="modal-close">&times;</button>
       <h2>Privacy Policy</h2>
       <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        Camera feeds and landmark calculations are processed locally. Exercise snapshots are securely saved to Cloudinary.
+        Camera feeds, face landmark tracking, and repetition analysis are processed locally inside your web browser.
       </p>
     </div>
   </div>
