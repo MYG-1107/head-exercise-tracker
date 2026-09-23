@@ -29,13 +29,15 @@
 
   <!-- Main Body -->
   <main class="container">
-    <!-- Controls -->
+    <!-- Action Controls -->
     <div class="controls">
       <button id="toggle-camera-btn">Turn Camera On</button>
       <button id="toggle-audio-btn" class="secondary-btn">🔊 Voice On</button>
+      <button id="switch-cam-btn" class="secondary-btn">📷 Flip Cam</button>
+      <button id="reset-btn" class="secondary-btn warning">🔄 Reset</button>
     </div>
 
-    <!-- Directional Badges with 25 Rep Target Breakdown -->
+    <!-- Directional Badges with Target Breakdown -->
     <div class="badge-container">
       <div class="badge-row">
         <span class="badge" id="badge-up">↑ UP (<span id="count-up">0</span>/25)</span>
@@ -89,6 +91,17 @@
   </footer>
 
   <!-- MODALS -->
+  <div id="modal-completion" class="modal-overlay">
+    <div class="modal-card celebration">
+      <button class="modal-close">&times;</button>
+      <h2>🎉 Workout Completed!</h2>
+      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
+        Great job! You have successfully completed <strong>100 head exercise repetitions</strong> (25 in each direction).
+      </p>
+      <button id="modal-reset-btn" class="modal-action-btn">Start New Session</button>
+    </div>
+  </div>
+
   <div id="modal-how-it-works" class="modal-overlay">
     <div class="modal-card">
       <button class="modal-close">&times;</button>
@@ -96,7 +109,7 @@
       <ol style="margin-top: 12px; padding-left: 20px; line-height: 1.6; color: #444444;">
         <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
         <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
-        <li><strong>Target Goal:</strong> Complete 25 repetitions for each direction to reach the 100 total goal.</li>
+        <li><strong>Target Goal:</strong> Complete 25 repetitions in each direction (100 total).</li>
         <li><strong>Track Posture & Expression:</strong> Maintain proper neck posture and facial mobility feedback.</li>
       </ol>
     </div>
