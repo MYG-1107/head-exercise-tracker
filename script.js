@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // ☁️ CLOUDINARY CONFIGURATION
-  // Replace these credentials with your Cloudinary details
   // ==========================================
-  const CLOUDINARY_CLOUD_NAME = 'azq6tuq4';       // e.g., 'my-cloud-123'
-  const CLOUDINARY_UPLOAD_PRESET = 'blfvqiv6'; // Unsigned upload preset name
+  const CLOUDINARY_CLOUD_NAME = 'azq6tuq4';
+  const CLOUDINARY_UPLOAD_PRESET = 'blfvqiv6';
+
+  // Target Repetition Goal
+  const TARGET_REPS = 10;
 
   // --- 1. MODAL NAVIGATION SYSTEM ---
   const modalTriggers = [
@@ -46,11 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- 2. WEBCAM & TRACKING ELEMENTS ---
   const toggleCamBtn = document.getElementById('toggle-camera-btn');
+  const toggleAudioBtn = document.getElementById('toggle-audio-btn');
   const capturePhotoBtn = document.getElementById('capture-photo-btn');
   const videoElement = document.getElementById('webcam');
   const overlayElement = document.getElementById('camera-off-overlay');
   const expressionDisplay = document.getElementById('expression-display');
   const commandDisplay = document.getElementById('command-display');
+  const timerDisplay = document.getElementById('timer-display');
+  const progressBar = document.getElementById('progress-bar');
   const photoCanvas = document.getElementById('photo-canvas');
   const galleryContainer = document.getElementById('gallery-container');
   const photoCountSpan = document.getElementById('photo-count');
@@ -64,18 +69,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let isCameraActive = false;
+  let isAudioMuted = false;
   let cameraStream = null;
   let faceMesh = null;
   let cameraUtils = null;
 
-  // Exercise & Screenshot State
+  // Exercise & State Tracking
   let currentDirection = 'CENTER';
   let currentExpression = 'Neutral';
   let repetitionCount = 0;
   let centerHoldStartTime = null;
   let capturedPhotos = [];
 
+  // Timer State
+  let sessionTimerInterval = null;
+  let sessionSeconds = 0;
+
+  // Audio Feedback Toggle Add-on
+  if (toggleAudioBtn) {
+    toggleAudioBtn.addEventListener('click', () => {
+      isAudioMuted = !isAudioMuted;
+      toggleAudioBtn.innerText = isAudioMuted ? '🔇 Voice Off' : '🔊 Voice On';
+      toggleAudioBtn.classList.toggle('muted', isAudioMuted);
+    });
+  }
+
   function speak(text) {
+    if (isAudioMuted) return;
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -96,10 +116,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Session Timer Functions
+  function startTimer() {
+    sessionSeconds = 0;
+    updateTimerUI();
+    sessionTimerInterval = setInterval(() => {
+      sessionSeconds++;
+      updateTimerUI();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (sessionTimerInterval) {
+      clearInterval(sessionTimerInterval);
+      sessionTimerInterval = null;
+    }
+  }
+
+  function updateTimerUI() {
+    if (!timerDisplay) return;
+    const mins = String(Math.floor(sessionSeconds / 60)).padStart(2, '0');
+    const secs = String(sessionSeconds % 60).padStart(2, '0');
+    timerDisplay.innerHTML = `Session Time: <span>${mins}:${secs}</span>`;
+  }
+
+  // Progress Bar & Goal Handler
+  function updateProgressUI() {
+    const percentage = Math.min((repetitionCount / TARGET_REPS) * 100, 100);
+    if (progressBar) {
+      progressBar.style.width = `${percentage}%`;
+    }
+    if (commandDisplay) {
+      if (repetitionCount >= TARGET_REPS) {
+        commandDisplay.innerHTML = `🎉 <strong>Goal Reached!</strong> Completed: ${repetitionCount} / ${TARGET_REPS}`;
+      } else {
+        commandDisplay.innerText = `Repetitions Completed: ${repetitionCount} / ${TARGET_REPS}`;
+      }
+    }
+  }
+
   // --- 3. CLOUDINARY UPLOAD LOGIC ---
   async function uploadToCloudinary(base64Image, label) {
-    if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME' || CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET') {
-      console.warn('Cloudinary credentials not set. Falling back to local display.');
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      console.warn('Cloudinary credentials missing.');
       return null;
     }
 
@@ -119,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const data = await response.json();
-      return data.secure_url; // Cloudinary Hosted Image URL
+      return data.secure_url;
     } catch (error) {
       console.error('Cloudinary Upload Error:', error);
       return null;
@@ -133,17 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
     photoCanvas.width = videoElement.videoWidth;
     photoCanvas.height = videoElement.videoHeight;
 
-    // Mirror horizontal canvas draw to match webcam video CSS
+    // Mirror canvas horizontally to match live webcam
     ctx.translate(photoCanvas.width, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(videoElement, 0, 0, photoCanvas.width, photoCanvas.height);
 
     const dataUrl = photoCanvas.toDataURL('image/jpeg', 0.85);
 
-    if (commandDisplay) commandDisplay.innerText = '';
-
     const cloudinaryUrl = await uploadToCloudinary(dataUrl, label);
-    const photoUrl = cloudinaryUrl || dataUrl; // Use Cloudinary URL if available, fallback to local base64
+    const photoUrl = cloudinaryUrl || dataUrl;
 
     const photoItem = {
       id: Date.now(),
@@ -155,14 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     capturedPhotos.unshift(photoItem);
     updateGalleryUI();
-
-    if (commandDisplay) {
-      if (cloudinaryUrl) {
-        commandDisplay.innerText = ` Total Reps: ${repetitionCount}`;
-      } else {
-        commandDisplay.innerText = `. Reps: ${repetitionCount}`;
-      }
-    }
   }
 
   function updateGalleryUI() {
@@ -198,9 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   if (capturePhotoBtn) {
-    capturePhotoBtn.addEventListener('click', () => {
-      capturePhoto('Manual');
-    });
+    capturePhotoBtn.addEventListener('click', () => capturePhoto('Manual'));
   }
 
   // --- 4. MEDIAPIPE FACE MESH (POSE + EXPRESSION TRACKING) ---
@@ -263,12 +310,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (currentDirection !== 'CENTER') {
         repetitionCount++;
-        if (commandDisplay) commandDisplay.innerText = `Repetitions Completed: ${repetitionCount}`;
+        updateProgressUI();
         speak(currentDirection.toLowerCase());
         centerHoldStartTime = null;
 
-        // Auto snapshot on movement trigger
+        // Auto snapshot upload to Cloudinary on movement
         capturePhoto('Auto-Movement');
+
+        if (repetitionCount === TARGET_REPS) {
+          speak("Congratulations! Workout goal completed.");
+        }
       } else {
         centerHoldStartTime = Date.now();
       }
@@ -321,12 +372,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       isCameraActive = true;
+      repetitionCount = 0;
+      updateProgressUI();
+      startTimer();
+
       if (toggleCamBtn) {
         toggleCamBtn.innerText = 'Turn Camera Off';
         toggleCamBtn.style.backgroundColor = '#333333';
       }
-      if (capturePhotoBtn) capturePhotoBtn.disabled = false;
-      if (commandDisplay) commandDisplay.innerText = 'Repetitions Completed: 0';
       speak('Camera activated. Follow direction prompts.');
 
     } catch (err) {
@@ -342,14 +395,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cameraUtils) {
       cameraUtils.stop();
     }
+    stopTimer();
     if (videoElement) videoElement.srcObject = null;
     if (overlayElement) overlayElement.style.display = 'flex';
     isCameraActive = false;
+
     if (toggleCamBtn) {
       toggleCamBtn.innerText = 'Turn Camera On';
       toggleCamBtn.style.backgroundColor = '#D02B2B';
     }
-    if (capturePhotoBtn) capturePhotoBtn.disabled = true;
     if (expressionDisplay) expressionDisplay.innerHTML = 'Head Pose: <span>Stopped</span> | Expression: <span>--</span>';
     if (commandDisplay) commandDisplay.innerText = 'Press "Turn Camera On" to start';
     setActiveBadge('CENTER');
