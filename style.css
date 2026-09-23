@@ -82,7 +82,7 @@ html, body {
   flex-shrink: 0;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   flex-wrap: wrap;
 }
@@ -91,8 +91,8 @@ html, body {
   background-color: #D02B2B;
   color: #FFFFFF;
   border: none;
-  padding: 7px 18px;
-  font-size: 0.88rem;
+  padding: 7px 16px;
+  font-size: 0.85rem;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
@@ -107,8 +107,8 @@ html, body {
   background-color: #333333;
   color: #FFFFFF;
   border: none;
-  padding: 7px 14px;
-  font-size: 0.82rem;
+  padding: 7px 12px;
+  font-size: 0.8rem;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
@@ -119,12 +119,20 @@ html, body {
   background-color: #555555;
 }
 
+.secondary-btn.warning {
+  background-color: #d97706;
+}
+
+.secondary-btn.warning:hover {
+  background-color: #b45309;
+}
+
 .secondary-btn.muted {
   background-color: #888888;
   color: #FFFFFF;
 }
 
-/* Compact Direction Badges */
+/* Direction Badges */
 .badge-container {
   flex-shrink: 0;
   display: flex;
@@ -142,9 +150,9 @@ html, body {
 .badge {
   background-color: #EAEAEA;
   color: #555555;
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 14px;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -155,7 +163,7 @@ html, body {
   box-shadow: 0 2px 5px rgba(208, 43, 43, 0.3);
 }
 
-/* Dynamic Maximized Video Frame */
+/* Maximized Video Frame */
 .video-container {
   flex: 1;
   min-height: 0;
@@ -218,7 +226,7 @@ html, body {
 }
 
 #expression-display {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: #1A1A1A;
 }
@@ -250,7 +258,7 @@ html, body {
   transition: width 0.3s ease-in-out;
 }
 
-/* Compact Fixed Footer */
+/* Footer */
 .app-footer {
   flex-shrink: 0;
   width: 100%;
@@ -320,6 +328,23 @@ html, body {
   overflow-y: auto;
 }
 
+.modal-card.celebration {
+  text-align: center;
+  border-top-color: #16a34a;
+}
+
+.modal-action-btn {
+  margin-top: 16px;
+  background-color: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -337,10 +362,10 @@ html, body {
   .brand-logo { font-size: 0.85rem; }
   .nav-links { gap: 8px; font-size: 0.7rem; }
   .container { padding: 4px 8px; gap: 4px; }
-  #toggle-camera-btn, .secondary-btn { padding: 5px 12px; font-size: 0.78rem; }
-  .badge { padding: 2px 8px; font-size: 0.7rem; }
+  #toggle-camera-btn, .secondary-btn { padding: 5px 10px; font-size: 0.75rem; }
+  .badge { padding: 2px 7px; font-size: 0.68rem; }
   .status-card { padding: 6px 10px; }
-  #expression-display { font-size: 0.82rem; }
+  #expression-display { font-size: 0.8rem; }
   #command-display { font-size: 0.75rem; }
   .app-footer { padding: 4px 8px; font-size: 0.68rem; }
 }
