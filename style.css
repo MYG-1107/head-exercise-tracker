@@ -112,16 +112,16 @@ html, body {
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.secondary-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.secondary-btn:hover:not(:disabled) {
+.secondary-btn:hover {
   background-color: #555555;
+}
+
+.secondary-btn.muted {
+  background-color: #888888;
+  color: #FFFFFF;
 }
 
 /* Compact Direction Badges */
@@ -142,9 +142,9 @@ html, body {
 .badge {
   background-color: #EAEAEA;
   color: #555555;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 14px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -205,7 +205,16 @@ html, body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+}
+
+.status-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 #expression-display {
@@ -214,14 +223,31 @@ html, body {
   color: #1A1A1A;
 }
 
-#expression-display span {
+#expression-display span, #timer-display span {
   color: #D02B2B;
 }
 
 #command-display {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #555555;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333333;
+}
+
+/* Progress Bar Container */
+.progress-container {
+  width: 100%;
+  height: 8px;
+  background-color: #E0E0E0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 3px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: #D02B2B;
+  transition: width 0.3s ease-in-out;
 }
 
 /* Compact Fixed Footer */
@@ -294,10 +320,6 @@ html, body {
   overflow-y: auto;
 }
 
-.gallery-modal {
-  max-width: 700px;
-}
-
 .modal-close {
   position: absolute;
   top: 10px;
@@ -307,65 +329,6 @@ html, body {
   font-size: 24px;
   cursor: pointer;
   color: #666666;
-}
-
-/* Gallery Grid Styling */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.empty-msg {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: #777777;
-  padding: 20px;
-  font-size: 0.9rem;
-}
-
-.photo-card {
-  background: #F0F0F0;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.photo-card img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-}
-
-.photo-card-info {
-  padding: 6px 8px;
-  font-size: 0.75rem;
-  color: #444;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.photo-card-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.photo-btn {
-  background: #D02B2B;
-  color: #fff;
-  border: none;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.photo-btn.download {
-  background: #0078D4;
 }
 
 /* Mobile Adjustments */
@@ -380,57 +343,4 @@ html, body {
   #expression-display { font-size: 0.82rem; }
   #command-display { font-size: 0.75rem; }
   .app-footer { padding: 4px 8px; font-size: 0.68rem; }
-}
-
-/* Secondary Action Buttons (Audio & Gallery) */
-.secondary-btn {
-  background-color: #333333;
-  color: #FFFFFF;
-  border: none;
-  padding: 7px 14px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.secondary-btn:hover {
-  background-color: #555555;
-}
-
-.secondary-btn.muted {
-  background-color: #888888;
-  color: #FFFFFF;
-}
-
-/* Status Meta (Pose Info & Timer) */
-.status-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-#timer-display span {
-  color: #D02B2B;
-}
-
-/* Progress Bar Container */
-.progress-container {
-  width: 100%;
-  height: 8px;
-  background-color: #E0E0E0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 4px 0;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background-color: #D02B2B;
-  transition: width 0.3s ease-in-out;
 }
