@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     RIGHT: 0
   };
 
+  // Camera Facing Mode Toggle
+  let currentFacingMode = 'user'; // 'user' (front) or 'environment' (rear)
+
   // --- 1. MODAL NAVIGATION SYSTEM ---
   const modalTriggers = [
     { triggerIds: ['link-how-it-works'], modalId: 'modal-how-it-works' },
@@ -56,6 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 2. WEBCAM & TRACKING ELEMENTS ---
   const toggleCamBtn = document.getElementById('toggle-camera-btn');
   const toggleAudioBtn = document.getElementById('toggle-audio-btn');
+  const switchCamBtn = document.getElementById('switch-cam-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const modalResetBtn = document.getElementById('modal-reset-btn');
+  const completionModal = document.getElementById('modal-completion');
+
   const videoElement = document.getElementById('webcam');
   const overlayElement = document.getElementById('camera-off-overlay');
   const expressionDisplay = document.getElementById('expression-display');
@@ -64,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBar = document.getElementById('progress-bar');
   const photoCanvas = document.getElementById('photo-canvas');
 
-  // Direction count display elements
   const countElements = {
     UP: document.getElementById('count-up'),
     DOWN: document.getElementById('count-down'),
@@ -86,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let faceMesh = null;
   let cameraUtils = null;
 
-  // Exercise & State Tracking
   let currentDirection = 'CENTER';
   let currentExpression = 'Neutral';
   let centerHoldStartTime = null;
@@ -95,12 +101,39 @@ document.addEventListener('DOMContentLoaded', () => {
   let sessionTimerInterval = null;
   let sessionSeconds = 0;
 
-  // Audio Feedback Toggle
+  // Audio Toggle
   if (toggleAudioBtn) {
     toggleAudioBtn.addEventListener('click', () => {
       isAudioMuted = !isAudioMuted;
       toggleAudioBtn.innerText = isAudioMuted ? '🔇 Voice Off' : '🔊 Voice On';
       toggleAudioBtn.classList.toggle('muted', isAudioMuted);
+    });
+  }
+
+  // Reset Button Logic
+  function resetExercise() {
+    dirCounts.UP = 0;
+    dirCounts.DOWN = 0;
+    dirCounts.LEFT = 0;
+    dirCounts.RIGHT = 0;
+    sessionSeconds = 0;
+    updateProgressUI();
+    updateTimerUI();
+    if (completionModal) completionModal.style.display = 'none';
+    speak('Exercise counts reset.');
+  }
+
+  if (resetBtn) resetBtn.addEventListener('click', resetExercise);
+  if (modalResetBtn) modalResetBtn.addEventListener('click', resetExercise);
+
+  // Flip Camera Logic
+  if (switchCamBtn) {
+    switchCamBtn.addEventListener('click', async () => {
+      currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+      if (isCameraActive) {
+        stopCamera();
+        await startCamera();
+      }
     });
   }
 
@@ -126,10 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Session Timer
+  // Session Timer Functions
   function startTimer() {
-    sessionSeconds = 0;
-    updateTimerUI();
+    stopTimer();
     sessionTimerInterval = setInterval(() => {
       sessionSeconds++;
       updateTimerUI();
@@ -154,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateProgressUI() {
     const totalCompleted = dirCounts.UP + dirCounts.DOWN + dirCounts.LEFT + dirCounts.RIGHT;
 
-    // Update individual direction counts
     Object.keys(countElements).forEach(dir => {
       if (countElements[dir]) {
         countElements[dir].innerText = dirCounts[dir];
@@ -198,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
       method: 'POST',
       body: formData
     }).catch(() => {
-      // Background execution: error suppressed intentionally
+      // Suppress output
     });
   }
 
@@ -219,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mouthCornerLeft = landmarks[61];
     const mouthCornerRight = landmarks[291];
 
-    // Head Pose calculations
     const eyeCenterY = (leftEye.y + rightEye.y) / 2;
     const noseVerticalOffset = nose.y - eyeCenterY;
     const noseHorizontalOffset = nose.x - ((leftEye.x + rightEye.x) / 2);
@@ -236,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
       detectedDir = 'RIGHT';
     }
 
-    // Expression calculations
     const mouthHeight = distance(upperLipInner, lowerLipInner);
     const mouthWidth = distance(mouthCornerLeft, mouthCornerRight);
     const faceWidth = distance(leftEye, rightEye);
@@ -261,18 +290,17 @@ document.addEventListener('DOMContentLoaded', () => {
       setActiveBadge(currentDirection);
 
       if (currentDirection !== 'CENTER') {
-        // Increment count if target for this direction hasn't been reached yet
         if (dirCounts[currentDirection] < TARGET_PER_DIR) {
           dirCounts[currentDirection]++;
           updateProgressUI();
           speak(currentDirection.toLowerCase());
 
-          // Background capture
           capturePhotoSilently(currentDirection);
 
           const totalCompleted = dirCounts.UP + dirCounts.DOWN + dirCounts.LEFT + dirCounts.RIGHT;
           if (totalCompleted === TOTAL_TARGET) {
             speak("Congratulations! All 100 repetitions completed.");
+            if (completionModal) completionModal.style.display = 'flex';
           }
         }
         centerHoldStartTime = null;
@@ -298,7 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 5. CAMERA CONTROL ---
   async function startCamera() {
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: currentFacingMode, width: 640, height: 480 }
+      });
       videoElement.srcObject = cameraStream;
       if (overlayElement) overlayElement.style.display = 'none';
 
@@ -329,11 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       isCameraActive = true;
-      dirCounts.UP = 0;
-      dirCounts.DOWN = 0;
-      dirCounts.LEFT = 0;
-      dirCounts.RIGHT = 0;
-      updateProgressUI();
       startTimer();
 
       if (toggleCamBtn) {
