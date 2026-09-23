@@ -381,3 +381,56 @@ html, body {
   #command-display { font-size: 0.75rem; }
   .app-footer { padding: 4px 8px; font-size: 0.68rem; }
 }
+
+/* Secondary Action Buttons (Audio & Gallery) */
+.secondary-btn {
+  background-color: #333333;
+  color: #FFFFFF;
+  border: none;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #555555;
+}
+
+.secondary-btn.muted {
+  background-color: #888888;
+  color: #FFFFFF;
+}
+
+/* Status Meta (Pose Info & Timer) */
+.status-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+#timer-display span {
+  color: #D02B2B;
+}
+
+/* Progress Bar Container */
+.progress-container {
+  width: 100%;
+  height: 8px;
+  background-color: #E0E0E0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: #D02B2B;
+  transition: width 0.3s ease-in-out;
+}
