@@ -1,167 +1,208 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Head Exercise Tracker | AI-Powered Movement Tracking</title>
-  
-  <!-- Site Favicon / Title Logo -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23D02B2B'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white'>🎯</text></svg>" />
-
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- MediaPipe Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="A privacy-first head movement tracker with optional in-browser camera tracking or manual session counts. No accounts or video uploads.">
+  <meta name="theme-color" content="#102a43">
+  <title>Head Movement Tracker — Private, Simple Session Tracking</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <script src="tracker-core.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to tracker</a>
 
-  <!-- Header Navigation -->
-  <header class="app-header">
-    <div class="header-container">
-      <a href="#" class="brand-logo">
-        <svg class="header-logo-icon" viewBox="0 0 100 100" width="22" height="22">
-          <circle cx="50" cy="50" r="46" fill="#D02B2B"/>
-          <text x="50" y="68" font-size="55" text-anchor="middle" fill="white">🎯</text>
-        </svg>
-        <span>Head Exercise</span>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Head Movement Tracker home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img" focusable="false">
+            <circle cx="24" cy="24" r="21" fill="currentColor" opacity=".12"></circle>
+            <path d="M24 9a11 11 0 0 0-7 19.5V38h14v-9.5A11 11 0 0 0 24 9Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"></path>
+            <path d="M18 20h.1M30 20h.1M20 25c2 2 6 2 8 0M19 34h10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
+          </svg>
+        </span>
+        <span class="brand-copy"><strong>Head Movement</strong><span>Tracker</span></span>
       </a>
-      <nav class="nav-links">
-        <a href="#" id="link-how-it-works" class="nav-item">Working Model</a>
-        <a href="#" id="link-about" class="nav-item">About</a>
-        <a href="#" id="link-developer" class="nav-item">Developer</a>
-        <a href="#" id="link-privacy" class="nav-item">Privacy</a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#safety">Safety</a>
       </nav>
     </div>
   </header>
 
-  <!-- Main Body -->
-  <main class="container">
-    <!-- Action Controls -->
-    <div class="controls">
-      <button id="toggle-camera-btn">Turn Camera On</button>
-      <button id="toggle-audio-btn" class="secondary-btn">🔊 Voice On</button>
-      <button id="switch-cam-btn" class="secondary-btn">📷 Flip Cam</button>
-      <button id="reset-btn" class="secondary-btn warning">🔄 Reset</button>
-    </div>
-
-    <!-- Directional Badges with Target Breakdown -->
-    <div class="badge-container">
-      <div class="badge-row">
-        <span class="badge" id="badge-up">↑ UP (<span id="count-up">0</span>/25)</span>
+  <main id="main-content">
+    <section class="intro section-wrap" id="top" aria-labelledby="page-title">
+      <p class="eyebrow"><span class="privacy-dot" aria-hidden="true"></span> Privacy-first by design</p>
+      <h1 id="page-title">A calmer way to track<br class="desktop-break"> your head movements.</h1>
+      <p class="intro-copy">Track gentle movement cycles at your own pace. Choose optional camera tracking or count completed movements manually—no account required.</p>
+      <div class="intro-points" aria-label="Privacy and usability features">
+        <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg> No image-upload feature</span>
+        <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg> No account or analytics</span>
+        <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg> Manual mode available</span>
       </div>
-      <div class="badge-row">
-        <span class="badge" id="badge-left">← LEFT (<span id="count-left">0</span>/25)</span>
-        <span class="badge active" id="badge-center">🎯 CENTER</span>
-        <span class="badge" id="badge-right">→ RIGHT (<span id="count-right">0</span>/25)</span>
+    </section>
+
+    <section class="tracker-section section-wrap" aria-labelledby="tracker-title">
+      <div class="tracker-card">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">Your session</p>
+            <h2 id="tracker-title">Movement tracker</h2>
+          </div>
+          <div class="session-state" id="session-state"><span class="state-dot" aria-hidden="true"></span><span id="session-state-text">Ready</span></div>
+        </div>
+
+        <div class="privacy-callout" id="camera-privacy-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.7 3.2 7.8 7.5 9.5 4.3-1.7 7.5-4.8 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+          <p><strong>Your camera stays off until you start a camera session.</strong> Camera mode processes frames in this browser and the app contains no image-upload code. It downloads the tracking library and model from jsDelivr only after you choose camera mode; that provider may receive ordinary connection metadata. <button class="text-button" type="button" data-dialog-open="privacy-dialog">Read privacy details</button></p>
+        </div>
+
+        <div class="mode-row">
+          <div class="mode-copy">
+            <span class="field-label">Tracking mode</span>
+            <span class="field-hint" id="mode-help">Camera tracking requires camera permission and model downloads.</span>
+          </div>
+          <button id="mode-toggle-btn" class="button button-subtle" type="button" aria-describedby="mode-help">Switch to manual mode</button>
+        </div>
+
+        <div class="camera-layout" id="camera-layout">
+          <div class="camera-stage" id="camera-stage">
+            <video id="webcam" autoplay muted playsinline aria-label="Live camera preview used for on-device head movement tracking"></video>
+            <div class="camera-overlay" id="camera-overlay">
+              <span class="camera-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><rect x="5" y="11" width="28" height="26" rx="5"/><path d="m33 20 10-6v20l-10-6"/></svg>
+              </span>
+              <strong>Camera is off</strong>
+              <span>Start a camera session when you are ready.</span>
+            </div>
+            <div class="camera-live-pill" id="camera-live-pill" hidden><span class="live-indicator" aria-hidden="true"></span> Camera active · <span id="pose-status">Waiting for face</span></div>
+          </div>
+          <div class="calibration-card">
+            <div class="calibration-heading">
+              <div>
+                <h3>1. Find your neutral position</h3>
+                <p>Look comfortably toward the camera, then calibrate. Hold still briefly.</p>
+              </div>
+              <span class="step-number" aria-hidden="true">01</span>
+            </div>
+            <button class="button button-secondary button-full" id="calibrate-btn" type="button" disabled>Calibrate neutral position</button>
+            <div class="calibration-progress" id="calibration-progress-wrap" hidden>
+              <div class="progress-track"><div class="progress-fill" id="calibration-progress-fill"></div></div>
+              <span id="calibration-progress-text">Preparing calibration…</span>
+            </div>
+            <p class="small-note">Calibration helps set a starting reference; it does not assess health or guarantee accurate tracking.</p>
+          </div>
+        </div>
+
+        <div class="manual-panel" id="manual-panel" hidden>
+          <div class="manual-intro">
+            <span class="step-number" aria-hidden="true">01</span>
+            <div><h3>Manual mode — camera not used</h3><p>Tap a direction only after you have completed that gentle movement and returned to centre.</p></div>
+          </div>
+          <div class="manual-grid" aria-label="Record a completed movement">
+            <button type="button" class="manual-direction" data-manual-direction="UP"><span aria-hidden="true">↑</span><strong>Up</strong><small>Record completed cycle</small></button>
+            <button type="button" class="manual-direction" data-manual-direction="DOWN"><span aria-hidden="true">↓</span><strong>Down</strong><small>Record completed cycle</small></button>
+            <button type="button" class="manual-direction" data-manual-direction="LEFT"><span aria-hidden="true">←</span><strong>Screen left</strong><small>Record completed cycle</small></button>
+            <button type="button" class="manual-direction" data-manual-direction="RIGHT"><span aria-hidden="true">→</span><strong>Screen right</strong><small>Record completed cycle</small></button>
+          </div>
+          <p class="small-note">Manual counts are self-reported. This mode does not observe or verify movement.</p>
+        </div>
+
+        <div class="tracker-status" role="status" aria-live="polite" aria-atomic="true">
+          <span class="status-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg></span>
+          <p id="tracking-status">Ready to begin. Your camera is off.</p>
+        </div>
+
+        <div class="session-controls" aria-label="Session controls">
+          <button id="start-session-btn" class="button button-primary" type="button">Start camera session</button>
+          <button id="pause-resume-btn" class="button button-secondary" type="button" disabled>Pause session</button>
+          <button id="end-session-btn" class="button button-danger-ghost" type="button" disabled>End session</button>
+        </div>
+        <div class="utility-controls">
+          <button id="voice-btn" class="utility-button" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Voice prompts off</span></button>
+          <button id="flip-camera-btn" class="utility-button" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3M8 3l-3 3 3 3M5 6h6"/></svg><span>Flip camera</span></button>
+          <button id="reset-btn" class="utility-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6M5.5 15a7 7 0 1 0 .2-7.2L4 10"/></svg><span>Reset counts</span></button>
+        </div>
+
+        <div class="stats-heading">
+          <div><h3>Session progress</h3><p>One repetition = move from centre to one direction and return to centre.</p></div>
+          <label class="goal-select"><span>Goal per direction</span><select id="target-per-direction" name="target-per-direction"><option value="3" selected>3 cycles</option><option value="5">5 cycles</option><option value="8">8 cycles</option><option value="10">10 cycles</option></select></label>
+        </div>
+        <div class="progress-summary">
+          <div class="progress-numbers"><strong id="total-progress">0 / 12</strong><span id="timer-display">00:00 elapsed</span></div>
+          <div class="progress-track" role="progressbar" id="overall-progress" aria-label="Session progress" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0"><div class="progress-fill" id="overall-progress-fill"></div></div>
+        </div>
+
+        <div class="direction-grid" aria-label="Repetition counts by direction">
+          <div class="direction-stat" id="stat-UP"><span class="direction-symbol" aria-hidden="true">↑</span><div><span class="direction-name">Up</span><strong><span id="count-UP">0</span><small> / <span class="per-direction-target">3</span></small></strong></div></div>
+          <div class="direction-stat" id="stat-DOWN"><span class="direction-symbol" aria-hidden="true">↓</span><div><span class="direction-name">Down</span><strong><span id="count-DOWN">0</span><small> / <span class="per-direction-target">3</span></small></strong></div></div>
+          <div class="direction-stat" id="stat-LEFT"><span class="direction-symbol" aria-hidden="true">←</span><div><span class="direction-name">Screen left</span><strong><span id="count-LEFT">0</span><small> / <span class="per-direction-target">3</span></small></strong></div></div>
+          <div class="direction-stat" id="stat-RIGHT"><span class="direction-symbol" aria-hidden="true">→</span><div><span class="direction-name">Screen right</span><strong><span id="count-RIGHT">0</span><small> / <span class="per-direction-target">3</span></small></strong></div></div>
+        </div>
+
+        <p class="session-footnote">Counts and elapsed time stay in this page's memory only. They are not saved to an account or sent to a server and will clear when the page is refreshed.</p>
       </div>
-      <div class="badge-row">
-        <span class="badge" id="badge-down">↓ DOWN (<span id="count-down">0</span>/25)</span>
+    </section>
+
+    <section class="info-section section-wrap" id="how-it-works" aria-labelledby="how-title">
+      <div class="section-heading"><p class="eyebrow">Simple by design</p><h2 id="how-title">How it works</h2><p>Designed for personal movement awareness, not diagnosis or treatment.</p></div>
+      <div class="info-grid">
+        <article class="info-card"><span class="info-icon" aria-hidden="true">01</span><h3>Choose a mode</h3><p>Use camera tracking after explicitly starting a session, or choose manual mode with no camera access.</p></article>
+        <article class="info-card"><span class="info-icon" aria-hidden="true">02</span><h3>Set your reference</h3><p>In camera mode, sit comfortably and calibrate a neutral position before tracking begins.</p></article>
+        <article class="info-card"><span class="info-icon" aria-hidden="true">03</span><h3>Complete a cycle</h3><p>Camera mode counts only after a detected direction and return to centre. Manual mode relies on your own input.</p></article>
       </div>
-    </div>
+    </section>
 
-    <!-- Maximized Video Container -->
-    <div class="video-container">
-      <video id="webcam" autoplay playsinline muted></video>
-      <div id="camera-off-overlay">Camera is Off</div>
-    </div>
-
-    <!-- Hidden Canvas for Background Snapshot Process -->
-    <canvas id="photo-canvas" style="display: none;"></canvas>
-
-    <!-- Status Output Card -->
-    <div class="status-card">
-      <div class="status-meta">
-        <p id="expression-display">Head Pose: <span>CENTER</span> | Expression: <span>Neutral</span></p>
-        <p id="timer-display">Session Time: <span>00:00</span></p>
+    <section class="privacy-section section-wrap" id="privacy" aria-labelledby="privacy-title">
+      <div class="privacy-panel">
+        <div class="privacy-panel-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 5 8 11v12c0 10 6.8 16.5 16 20 9.2-3.5 16-10 16-20V11L24 5Z"/><path d="m16 24 5 5 11-12"/></svg></div>
+        <div><p class="eyebrow">Your data, your device</p><h2 id="privacy-title">Privacy is the default.</h2><p>There is no login, analytics tool, database, cookie-based tracking, or image-upload feature in this version. Camera frames are passed to the in-browser tracker only. If you select camera mode, third-party tracking code and model assets are downloaded from jsDelivr; those requests may reveal standard connection metadata to the CDN. Manual mode does not request camera permission or load those libraries.</p><button class="button button-secondary" type="button" data-dialog-open="privacy-dialog">Full privacy details</button></div>
       </div>
+    </section>
 
-      <!-- Visual Progress Bar -->
-      <div class="progress-container">
-        <div id="progress-bar" class="progress-fill"></div>
+    <section class="safety-section section-wrap" id="safety" aria-labelledby="safety-title">
+      <div class="section-heading"><p class="eyebrow">Please take care</p><h2 id="safety-title">Move gently and stay comfortable.</h2><p>This tracker is a general-purpose activity aid, not a medical device or physiotherapy plan.</p></div>
+      <div class="safety-list">
+        <p><span aria-hidden="true">✓</span> Use a comfortable range of movement and take breaks whenever needed.</p>
+        <p><span aria-hidden="true">✓</span> Stop if movement causes pain, dizziness, numbness or other concerning symptoms.</p>
+        <p><span aria-hidden="true">✓</span> Seek guidance from a qualified healthcare professional if you have an injury, symptoms or questions about suitable movements.</p>
       </div>
-
-      <p id="command-display">Repetitions Completed: 0 / 100</p>
-    </div>
+      <p class="disclaimer-note">The tracker estimates direction from facial landmarks. It does not measure clinical range of motion, posture quality, pain, recovery, or exercise correctness. Tracking accuracy has not been clinically validated.</p>
+    </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <div class="footer-container">
-      <p>&copy; 2026 Head Exercise Tracker. Developed by <strong>Mallarapu Yaswanth</strong>.</p>
-      <div class="footer-links">
-        <a href="#" id="footer-link-about">About</a>
-        <a href="#" id="footer-link-developer">Developer</a>
-        <a href="#" id="footer-link-privacy">Privacy Policy</a>
-        <a href="#" id="footer-link-disclaimer">Medical Disclaimer</a>
-      </div>
-    </div>
+  <footer class="site-footer">
+    <div class="footer-inner"><p>© 2026 Head Movement Tracker</p><p>Privacy-first prototype · Not medical advice</p><button type="button" class="text-button" data-dialog-open="safety-dialog">Safety and limitations</button></div>
   </footer>
 
-  <!-- MODALS -->
-  <div id="modal-completion" class="modal-overlay">
-    <div class="modal-card celebration">
-      <button class="modal-close">&times;</button>
-      <h2>🎉 Workout Completed!</h2>
-      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        Great job! You have successfully completed <strong>100 head exercise repetitions</strong> (25 in each direction).
-      </p>
-      <button id="modal-reset-btn" class="modal-action-btn">Start New Session</button>
+  <dialog class="app-dialog" id="privacy-dialog" aria-labelledby="privacy-dialog-title">
+    <div class="dialog-heading"><div><p class="eyebrow">Privacy details</p><h2 id="privacy-dialog-title">What this version does with data</h2></div><button type="button" class="dialog-close" data-dialog-close aria-label="Close privacy details">×</button></div>
+    <div class="dialog-content">
+      <h3>Camera and image data</h3><p>The camera is requested only after you press Start in camera mode. This app's code passes video frames to the MediaPipe tracker running in your browser. The app includes no function that uploads or stores frames or photographs. You can stop the session to release the camera.</p>
+      <h3>External dependency</h3><p>When camera mode starts, version-pinned MediaPipe scripts and related model files are retrieved from jsDelivr. The CDN may receive normal connection information such as your IP address, request URL and user-agent. This version does not send video frames to jsDelivr as an upload. For stricter supply-chain isolation, the libraries and all model assets should be self-hosted and reviewed.</p>
+      <h3>Session statistics</h3><p>Counts, selected goal and elapsed time are kept in page memory only. They are not written to local storage, cookies, an account or a server. Refreshing or closing the page clears them.</p>
+      <h3>Voice prompts</h3><p>Voice prompts are off by default. If enabled, the browser's speech synthesis speaks short prompts; this app does not record microphone audio. Voice availability depends on your browser and device.</p>
+      <h3>Limitations</h3><p>This is a prototype. No independent security audit or clinical validation is claimed. Do not use it as a diagnosis, treatment recommendation or substitute for professional advice.</p>
     </div>
-  </div>
+    <div class="dialog-actions"><button class="button button-primary" type="button" data-dialog-close>Understood</button></div>
+  </dialog>
 
-  <div id="modal-how-it-works" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close">&times;</button>
-      <h2>How It Works</h2>
-      <ol style="margin-top: 12px; padding-left: 20px; line-height: 1.6; color: #444444;">
-        <li><strong>Enable Camera:</strong> Click "Turn Camera On".</li>
-        <li><strong>Follow Direction Prompts:</strong> Move your head UP, DOWN, LEFT, or RIGHT.</li>
-        <li><strong>Target Goal:</strong> Complete 25 repetitions in each direction (100 total).</li>
-        <li><strong>Auto Zoom & Guidance:</strong> Automatic face digital zoom maintains tracking accuracy.</li>
-      </ol>
-    </div>
-  </div>
+  <dialog class="app-dialog" id="safety-dialog" aria-labelledby="safety-dialog-title">
+    <div class="dialog-heading"><div><p class="eyebrow">Safety information</p><h2 id="safety-dialog-title">Know the limits</h2></div><button type="button" class="dialog-close" data-dialog-close aria-label="Close safety information">×</button></div>
+    <div class="dialog-content"><p>This app counts detected movement cycles or manual entries. It does not diagnose a condition, determine whether an exercise is appropriate for you, measure medical range of motion or confirm correct technique. Choose a modest personal goal, move only within a comfortable range, and stop if you experience pain, dizziness or concerning symptoms. Ask a qualified healthcare professional for advice about your own situation.</p></div>
+    <div class="dialog-actions"><button class="button button-primary" type="button" data-dialog-close>Close</button></div>
+  </dialog>
 
-  <div id="modal-about" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close">&times;</button>
-      <h2>About Head Exercise Tracker</h2>
-      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        A real-time computer vision application for neck exercise, posture correction, and facial mobility feedback.
-      </p>
-    </div>
-  </div>
-
-  <div id="modal-developer" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close">&times;</button>
-      <h2>Developer Information</h2>
-      <p style="margin-top: 10px;"><strong>Developer:</strong> Mallarapu Yaswanth</p>
-      <p style="color: #D02B2B; font-weight: 600;">AI & Computer Vision Developer</p>
-    </div>
-  </div>
-
-  <div id="modal-privacy" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close">&times;</button>
-      <h2>Privacy Policy</h2>
-      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        Camera feeds, face landmark tracking, and repetition analysis are processed locally inside your web browser.
-      </p>
-    </div>
-  </div>
-
-  <div id="modal-disclaimer" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close">&times;</button>
-      <h2>Medical Disclaimer</h2>
-      <p style="margin-top: 10px; line-height: 1.5; color: #444444;">
-        This tool is intended for personal posture breaks and general neck fitness. Consult a healthcare professional before conducting physical therapy exercises.
-      </p>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+  <dialog class="app-dialog completion-dialog" id="completion-dialog" aria-labelledby="completion-title">
+    <div class="completion-mark" aria-hidden="true">✓</div>
+    <p class="eyebrow">Session complete</p><h2 id="completion-title">You reached your selected goal.</h2>
+    <p id="completion-summary">Your counts are shown below. Your camera is off and no session history was saved.</p>
+    <div class="dialog-actions"><button class="button button-primary" type="button" id="new-session-btn">Start a new session</button><button class="button button-secondary" type="button" data-dialog-close>Close</button></div>
+  </dialog>
 </body>
 </html>
