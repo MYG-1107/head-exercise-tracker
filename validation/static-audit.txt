@@ -1,0 +1,19 @@
+Head Movement Tracker 2.2.0 — static audit
+Date: 2026-10-10
+
+RESULT: PASS
+- 10/10 pure tracker unit tests passed.
+- JavaScript syntax checks passed.
+- 56 unique HTML IDs; no duplicate IDs.
+- All 36 static JavaScript ID lookups have matching HTML elements.
+- 133 parsed CSS rules/at-rules; no parser errors.
+- All relative assets exist.
+- robots.txt/sitemap.xml/favicon SVG parsed successfully.
+- One getUserMedia call site.
+- No MediaPipe Camera helper or camera_utils dependency in the new app.
+- No Cloudinary, fetch(), XHR, localStorage, sessionStorage, IndexedDB, beacon or image upload code in script.js.
+- No eager remote script tags in index.html; the pinned MediaPipe Face Mesh dependency loads only after camera startup.
+
+BROWSER / HARDWARE TEST: NOT PASS/FAIL IN THIS ENVIRONMENT
+- Browser automation was blocked by the runtime policy for file:// and localhost URLs (ERR_BLOCKED_BY_ADMINISTRATOR).
+- Real webcam tracking has not been certified. Run tests/browser-smoke.html locally, then complete validation/VALIDATION-REPORT.md's hardware acceptance checklist.

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Browser smoke test</title></head>
+<body>
+  <h1>Head Movement Tracker browser smoke test</h1>
+  <p id="result" role="status">RUNNING</p>
+  <ol id="checks"></ol>
+  <iframe id="app" title="Tracker under test" src="../index.html" style="width:100%;height:900px;border:1px solid #ccc"></iframe>
+  <script>
+    (async () => {
+      const result = document.getElementById('result');
+      const checks = document.getElementById('checks');
+      const record = (name, pass, detail = '') => {
+        const item = document.createElement('li');
+        item.textContent = `${pass ? 'PASS' : 'FAIL'} — ${name}${detail ? `: ${detail}` : ''}`;
+        item.dataset.result = pass ? 'pass' : 'fail'; checks.appendChild(item);
+        if (!pass) throw new Error(`${name} failed ${detail}`);
+      };
+      try {
+        const frame = document.getElementById('app');
+        if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+          // The frame may finish loading before this script attaches its handler.
+        } else {
+          await new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error('App iframe did not load')), 8000);
+            frame.addEventListener('load', () => { clearTimeout(timer); resolve(); }, { once: true });
+          });
+        }
+        const win = frame.contentWindow, doc = frame.contentDocument;
+        let cameraRequests = 0;
+        const mediaDevices = win.navigator.mediaDevices;
+        if (mediaDevices && typeof mediaDevices.getUserMedia === 'function') {
+          const originalGetUserMedia = mediaDevices.getUserMedia.bind(mediaDevices);
+          Object.defineProperty(mediaDevices, 'getUserMedia', { configurable: true, value: (...args) => { cameraRequests += 1; return originalGetUserMedia(...args); } });
+        }
+        record('Core app rendered', !!doc.getElementById('start-session-btn'));
+        record('Camera is off initially', doc.getElementById('camera-overlay').hidden === false && doc.getElementById('camera-live-pill').hidden === true);
+        doc.getElementById('mode-toggle-btn').click();
+        record('Manual mode selected', doc.getElementById('manual-panel').hidden === false);
+        doc.getElementById('start-session-btn').click();
+        record('Manual session starts', doc.getElementById('session-state').dataset.state === 'running');
+        record('Manual mode never requests camera permission', cameraRequests === 0);
+        doc.querySelector('[data-manual-direction="UP"]').click();
+        record('Manual count updates live', doc.getElementById('count-UP').textContent === '1' && doc.getElementById('total-progress').textContent === '1 / 12');
+        doc.getElementById('pause-resume-btn').click();
+        record('Pause changes session state', doc.getElementById('session-state').dataset.state === 'paused');
+        doc.getElementById('start-session-btn').click();
+        record('Resume returns to running', doc.getElementById('session-state').dataset.state === 'running');
+        doc.getElementById('end-session-btn').click();
+        record('Stop ends session', doc.getElementById('session-state').dataset.state === 'ended');
+        doc.getElementById('reset-btn').click();
+        record('Reset clears counters and time', doc.getElementById('count-UP').textContent === '0' && doc.getElementById('total-progress').textContent === '0 / 12' && doc.getElementById('timer-display').textContent === '00:00');
+        record('Manual mode does not load camera CDN', ![...win.performance.getEntriesByType('resource')].some(entry => entry.name.includes('jsdelivr.net')));
+        doc.querySelector('[data-dialog-open="privacy-dialog"]').click();
+        record('Privacy dialog opens accessibly', doc.getElementById('privacy-dialog').open === true);
+        doc.querySelector('#privacy-dialog [data-dialog-close]').click();
+        record('Privacy dialog closes', doc.getElementById('privacy-dialog').open === false);
+        result.textContent = 'PASS — all browser smoke checks completed';
+        result.dataset.result = 'pass';
+      } catch (error) {
+        result.textContent = `FAIL — ${error.message}`;
+        result.dataset.result = 'fail';
+        console.error(error);
+      }
+    })();
+  </script>
+</body>
+</html>

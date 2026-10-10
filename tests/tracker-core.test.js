@@ -2,44 +2,85 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createRepetitionTracker, directionFromPose } = require('../tracker-core.js');
 
-test('counts one repetition only after direction then centre', () => {
-  const t = createRepetitionTracker(3);
-  assert.equal(t.observe('LEFT').type, 'movement-started');
-  assert.equal(t.observe('LEFT').type, 'steady');
-  const e = t.observe('CENTER');
-  assert.equal(e.type, 'repetition'); assert.equal(e.counts.LEFT, 1); assert.equal(e.total, 1);
+test('one camera repetition requires direction then centre', () => {
+  const tracker = createRepetitionTracker(3);
+  assert.equal(tracker.observe('LEFT').type, 'movement-started');
+  assert.equal(tracker.observe('LEFT').type, 'steady');
+  assert.equal(tracker.observe('LEFT').type, 'steady');
+  const completed = tracker.observe('CENTER');
+  assert.equal(completed.type, 'repetition');
+  assert.equal(completed.counts.LEFT, 1);
+  assert.equal(completed.total, 1);
 });
-test('direct switch between non-centre directions never counts', () => {
-  const t = createRepetitionTracker(3); t.observe('LEFT');
-  assert.equal(t.observe('RIGHT').type, 'direction-switch-without-neutral');
-  assert.notEqual(t.observe('CENTER').type, 'repetition'); assert.equal(t.getSnapshot().total, 0);
+
+test('a direct switch between non-neutral directions is never counted', () => {
+  const tracker = createRepetitionTracker(3);
+  tracker.observe('LEFT');
+  assert.equal(tracker.observe('RIGHT').type, 'direction-switch-without-neutral');
+  assert.notEqual(tracker.observe('CENTER').type, 'repetition');
+  assert.equal(tracker.getSnapshot().total, 0);
 });
-test('interruption cancels an unfinished cycle without clearing completed counts', () => {
-  const t = createRepetitionTracker(3); t.observe('UP'); t.observe('CENTER'); t.observe('DOWN'); t.interruptMovement();
-  assert.equal(t.getSnapshot().counts.UP, 1); assert.equal(t.getSnapshot().counts.DOWN, 0);
-  t.observe('DOWN'); assert.equal(t.observe('CENTER').counts.DOWN, 1);
+
+test('face loss interrupts an incomplete cycle but preserves completed cycles', () => {
+  const tracker = createRepetitionTracker(3);
+  tracker.observe('UP'); tracker.observe('CENTER');
+  tracker.observe('DOWN'); tracker.interruptMovement();
+  assert.equal(tracker.getSnapshot().counts.UP, 1);
+  assert.equal(tracker.getSnapshot().counts.DOWN, 0);
+  tracker.observe('DOWN');
+  assert.equal(tracker.observe('CENTER').counts.DOWN, 1);
 });
-test('direction count never exceeds the selected target', () => {
-  const t = createRepetitionTracker(1); t.observe('UP'); t.observe('CENTER'); t.observe('UP');
-  assert.equal(t.observe('CENTER').counts.UP, 1); assert.equal(t.getSnapshot().total, 1);
+
+test('same direction cannot produce repeated counts without an intervening centre', () => {
+  const tracker = createRepetitionTracker(3);
+  tracker.observe('UP');
+  for (let i = 0; i < 40; i++) tracker.observe('UP');
+  assert.equal(tracker.getSnapshot().counts.UP, 0);
+  tracker.observe('CENTER');
+  tracker.observe('UP');
+  assert.equal(tracker.getSnapshot().counts.UP, 1);
 });
-test('manual cycle recording works and completes total target', () => {
-  const t = createRepetitionTracker(1); t.recordManual('UP'); t.recordManual('DOWN'); t.recordManual('LEFT');
-  const result = t.recordManual('RIGHT'); assert.equal(result.type, 'manual-repetition'); assert.equal(result.complete, true); assert.equal(result.total, 4);
+
+test('goal cap and session completion are correct', () => {
+  const tracker = createRepetitionTracker(1);
+  for (const direction of ['UP', 'DOWN', 'LEFT', 'RIGHT']) tracker.recordManual(direction);
+  assert.equal(tracker.getSnapshot().complete, true);
+  assert.equal(tracker.getSnapshot().total, 4);
+  assert.equal(tracker.recordManual('UP').type, 'direction-goal-reached');
+  assert.equal(tracker.getSnapshot().counts.UP, 1);
 });
-test('target selection accepts valid positive limits and ignores invalid values', () => {
-  const t = createRepetitionTracker(3); assert.equal(t.setTargetPerDirection(5).totalTarget, 20);
-  assert.equal(t.setTargetPerDirection(-1).targetPerDirection, 5); assert.equal(t.setTargetPerDirection(101).targetPerDirection, 5);
+
+test('manual entries are independent and reject invalid directions', () => {
+  const tracker = createRepetitionTracker(2);
+  assert.equal(tracker.recordManual('bogus').type, 'invalid-direction');
+  assert.equal(tracker.recordManual('up').counts.UP, 1);
+  assert.equal(tracker.recordManual('RIGHT').counts.RIGHT, 1);
 });
-test('pose classifier detects four directions relative to calibrated neutral', () => {
-  const b = { horizontal: 0, vertical: 0 };
-  assert.equal(directionFromPose({ horizontal: 0, vertical: -0.25 }, b), 'UP');
-  assert.equal(directionFromPose({ horizontal: 0, vertical: 0.24 }, b), 'DOWN');
-  assert.equal(directionFromPose({ horizontal: 0.27, vertical: 0 }, b), 'LEFT');
-  assert.equal(directionFromPose({ horizontal: -0.27, vertical: 0 }, b), 'RIGHT');
-  assert.equal(directionFromPose({ horizontal: 0.06, vertical: 0.05 }, b), 'CENTER');
+
+test('invalid target values do not introduce zero or negative goals', () => {
+  const tracker = createRepetitionTracker(3);
+  tracker.setTargetPerDirection(-1);
+  assert.equal(tracker.getSnapshot().targetPerDirection, 3);
+  tracker.setTargetPerDirection(5);
+  assert.equal(tracker.getSnapshot().totalTarget, 20);
 });
-test('invalid directions never affect counts', () => {
-  const t = createRepetitionTracker(3); const event = t.recordManual('NOT A DIRECTION');
-  assert.equal(event.type, 'invalid-direction'); assert.equal(t.getSnapshot().total, 0);
+
+test('pose classifier identifies four directions relative to calibration', () => {
+  const base = { horizontal: 0, vertical: 0 };
+  assert.equal(directionFromPose({ horizontal: 0, vertical: -0.3 }, base), 'UP');
+  assert.equal(directionFromPose({ horizontal: 0, vertical: 0.3 }, base), 'DOWN');
+  assert.equal(directionFromPose({ horizontal: 0.3, vertical: 0 }, base), 'LEFT');
+  assert.equal(directionFromPose({ horizontal: -0.3, vertical: 0 }, base), 'RIGHT');
+  assert.equal(directionFromPose({ horizontal: 0.01, vertical: 0.01 }, base), 'CENTER');
+});
+
+test('pose classifier uses hysteresis around neutral to reduce direction flicker', () => {
+  const base = { horizontal: 0, vertical: 0 };
+  assert.equal(directionFromPose({ horizontal: 0.085, vertical: 0 }, base, { activeDirection: 'LEFT' }), 'LEFT');
+  assert.equal(directionFromPose({ horizontal: 0.025, vertical: 0 }, base, { activeDirection: 'LEFT' }), 'CENTER');
+});
+
+test('malformed pose inputs safely return centre', () => {
+  assert.equal(directionFromPose(null, null), 'CENTER');
+  assert.equal(directionFromPose({ horizontal: NaN, vertical: 1 }, { horizontal: 0, vertical: 0 }), 'CENTER');
 });
