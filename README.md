@@ -1,86 +1,59 @@
-# Head Movement Tracker — Final Replacement Package 2.2
+# Head Movement Tracker — Simple v2.3
 
-A small static website for tracking gentle head-movement cycles. It is designed for GitHub Pages and intentionally focuses the home screen on the live video, current direction, repetition counts and session controls.
+A small static app for tracking gentle head-movement cycles. It is designed for GitHub Pages and has two modes:
 
-## Deployment
+- **Camera mode:** MediaPipe estimates direction in the browser after the user starts the session. A camera repetition counts only after moving from centre to one direction and returning to centre.
+- **Manual mode:** the camera is not requested. The user taps a direction after completing a cycle themselves.
 
-1. Extract this ZIP.
+This is a personal movement-tracking prototype, not a medical device, diagnostic system, physiotherapy prescription, or clinically validated treatment tool.
+
+## What's included
+
+- `index.html` — short, simplified interface with labelled icon buttons.
+- `style.css` — responsive layout, large touch targets, zoom support, focus outlines, reduced-motion support.
+- `script.js` — camera lifecycle, calibration, session controls and UI updates.
+- `tracker-core.js` — pure repetition logic and pose classification.
+- `favicon.svg`, `robots.txt`, `sitemap.xml` — site assets and crawl files.
+- `tests/tracker-core.test.js` — automated tests for counting logic.
+- `package.json` — built-in Node.js test commands.
+- `CHANGELOG.md`, `VALIDATION-CHECKLIST.md` — changes and deployment tests.
+
+## Deploy on GitHub Pages
+
+1. Extract this package.
 2. Open <https://github.com/MYG-1107/head-exercise-tracker>.
-3. Upload the ZIP contents to the repository root, replacing files with matching names. Keep `tracker-core.js`, `tests/`, and `validation/`.
-4. Commit to the branch configured for GitHub Pages (the current repository setup uses `main` and the root folder).
-5. Open <https://myg-1107.github.io/head-exercise-tracker/> and perform a hard refresh.
+3. Upload all package contents to the repository root, replacing same-named files. Keep `tracker-core.js` and the `tests/` folder.
+4. Commit to the branch configured for GitHub Pages (currently `main`).
+5. Hard-refresh <https://myg-1107.github.io/head-exercise-tracker/> after deployment.
 
-This is a static site. It requires no server-side API, credentials, build step or database. `npm install` is not required.
+No build process, server, account, database, or API key is needed.
 
-## Product changes in 2.2
+## Typography and content approach
 
-- Removed introductory/marketing blocks from the main flow; the video and live tracker take priority.
-- Removed the MediaPipe `Camera` helper and now acquire the webcam through one `getUserMedia()` call and one owned frame loop. This avoids two independent camera-acquisition paths.
-- Requests camera permission only after the user selects Start in camera mode.
-- Loads the version-pinned MediaPipe Face Mesh script/model only after starting camera mode. Manual mode does not load the CDN.
-- Automatically calibrates when a face first becomes visible, with progress feedback; recalibration is available.
-- Counts a camera repetition only after a stable direction is followed by a stable return to centre.
-- Uses separate enter/exit thresholds (hysteresis) to reduce flicker near neutral.
-- Cancels incomplete movement cycles if the face is lost, and stops tracking safely when frame processing throws an error.
-- Includes manual mode, optional voice prompts (off by default), short configurable goals, pause/resume, stop and reset controls.
-- Session counts and elapsed time stay in page memory. No account, analytics, image upload or persistent session history is implemented.
-- Includes unit tests and a same-origin browser smoke-test page.
+The interface uses the Source Sans 3 typeface documented in NAV's public design system and follows the general accessibility principles described by UDI: clear hierarchy, keyboard navigation, relative type sizing and short, understandable wording. It does not copy either organisation's branding or unrelated service copy. Source: <https://aksel.nav.no/grunnleggende/styling/typografi> and <https://www.udi.no/en/about-the-udi/about-the-website/>.
+
+For the requested typeface, the browser requests the font from NAV's public CDN. Camera mode requests the version-pinned MediaPipe script and related model assets from jsDelivr after the user selects Start. Those providers can receive ordinary connection metadata, such as IP address and browser request details. For the most restrictive privacy requirement, replace the external font with a system-font stack and self-host/review the full MediaPipe code/model assets before release.
 
 ## Privacy model
 
-- The app has no login, analytics SDK, cookies, local-storage writes, database or image-upload function.
-- Session counts and elapsed time exist in JavaScript memory only and clear on refresh/close.
-- Camera permission is requested only when Start is pressed in camera mode.
-- Video frames are passed from the one active camera stream to MediaPipe running in the browser. Camera mode downloads version-pinned third-party JavaScript and model assets from jsDelivr. The CDN can receive ordinary connection metadata; as with any third-party code executing in a page, this dependency should be reviewed before making stronger security guarantees.
-- Manual mode never requests camera permission and does not load MediaPipe.
-- The app does not use microphone input. Optional voice output uses browser speech synthesis.
+- There is no image-upload function, analytics, login, cookie-based tracking, or persistent session history in this version.
+- Camera permission is requested only after the user selects Start in camera mode.
+- Camera frames are passed to the MediaPipe pipeline in the browser. The code does not intentionally upload or save camera frames.
+- Pause, stop, reset and completed sessions release the camera tracks.
+- Manual mode does not request camera access and does not load the MediaPipe script.
+- Counts and elapsed time exist in page memory only and clear on reload.
+- Voice is off by default and uses browser speech synthesis only; microphone audio is not recorded.
 
-For the strongest privacy/supply-chain boundary, vendor the MediaPipe script and every associated model/WASM asset into this repository, verify versions and integrity, and then remove the CDN dependency. This release does not claim to have completed that vendor/security-audit step.
+## Test locally
 
-## Run source-level checks
-
-With a current Node.js release:
+Install a current Node.js release and run:
 
 ```bash
 npm run check
 ```
 
-The 10 automated unit tests cover state-machine counting, false counts on direct direction changes, interrupted movement, goal completion/capping, manual mode, pose thresholds and malformed input.
+These tests validate syntax and the pure counting/classification logic. They do not prove real-world camera accuracy, browser permission behavior, CDN availability, accessibility compliance, or medical effectiveness.
 
-## Run the browser smoke test
+## Health and safety
 
-Start a local static server from the extracted folder:
-
-```bash
-python -m http.server 8000
-```
-
-Open <http://localhost:8000/tests/browser-smoke.html>. It exercises the actual page in an iframe and checks:
-
-- the app initializes without a missing-element error;
-- the camera is off on page load;
-- manual mode starts without loading MediaPipe/CDN resources;
-- a manual direction count updates the total and per-direction count live;
-- pause, resume, stop and reset work;
-- the privacy dialog opens and closes.
-
-This test does not validate actual face tracking. It does not request a real camera.
-
-## Post-deployment real-camera checklist
-
-- [ ] Start camera mode; grant permission only after Start is pressed.
-- [ ] Confirm the camera LED/browser indicator turns on once and turns off after Stop, Pause and completion.
-- [ ] Wait for automatic calibration to finish while sitting still and looking towards the camera.
-- [ ] Test one gentle movement in each direction and return to neutral; verify exactly one count per complete cycle.
-- [ ] Switch directly between two off-centre directions; it must not count a completed repetition.
-- [ ] Move out of frame mid-cycle; it must not count.
-- [ ] Deny camera permission; verify the error is readable and manual mode still works.
-- [ ] Disable internet after the page loads and start camera mode; verify the CDN failure message and manual fallback are understandable.
-- [ ] Open DevTools → Network. Confirm there are no image-upload requests. Camera mode should request only the pinned MediaPipe script/model assets from jsDelivr.
-- [ ] Test pause/resume, camera flip, reset, stop, and a completed goal; verify one active camera stream and timer state at each transition.
-- [ ] Test on at least one desktop webcam and one mobile device, in different lighting and camera angles.
-- [ ] Verify left/right means the displayed preview's screen direction on each supported camera.
-
-## Limitations
-
-This is a prototype, not a medical device or validated physiotherapy application. The face-landmark heuristic can behave differently with camera angle, lighting, movement style and device performance. The unit tests validate deterministic program logic; they are not proof of tracking accuracy or clinical benefit. If live detection is not reliable, stop camera tracking and use manual mode.
+Move only within a comfortable range. Stop if movement causes pain, dizziness, numbness, or other concerning symptoms. Seek advice from a qualified healthcare professional when needed. The app estimates direction from facial landmarks; it does not measure clinical range of motion, assess technique or diagnose a condition.

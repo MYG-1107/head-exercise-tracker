@@ -1,22 +1,13 @@
 # Changelog
 
-## 2.2.0 — Release-candidate validation and lifecycle fix
+## v2.3 — Simpler, clearer controls
 
-- Simplified the main screen so video, live direction and counts are the focal point.
-- Fixed missing DOM IDs that could throw during initial UI rendering.
-- Removed the MediaPipe Camera helper in favour of one explicit camera stream and one owned frame-processing loop; avoids competing camera-acquisition paths.
-- Added stale-start guards and cleanup for permission/model-loading races.
-- Added safe shutdown on frame-processing failures.
-- Tightened calibration stability checks and used separate direction-entry and neutral-exit thresholds.
-- Added unit tests and a browser smoke page for manual tracking and session controls.
-- Preserved the privacy-first model: no image uploads, analytics, account, cookies or persisted session data.
-
-## 2.1.0 — Previous iteration
-
-- Reduced homepage content and added live direction feedback, automatic calibration and a compact counter layout.
-- Kept manual mode and local-only session state.
-
-## 2.0.0 — Privacy-first baseline
-
-- Removed the historical silent camera-image upload function and Cloudinary integration.
-- Added manual tracking, session controls, per-direction caps, privacy notes and automated tracker tests.
+- Simplified the page into one main tracker view.
+- Made the camera preview and live direction the main focus.
+- Added icon buttons with visible short labels for Flip, Voice and Reset; each icon button also has an accessible name and title.
+- Used Source Sans 3 from NAV's public font CDN and short, clear content inspired by public-service accessibility principles; no UDI/NAV branding or unrelated copy was reproduced.
+- Added a responsive layout, visible keyboard focus, browser zoom support and reduced-motion support.
+- Kept camera access opt-in and removed image uploads, analytics and persistent session storage.
+- Added start-attempt cancellation handling, single-stream ownership, frame-loop cleanup and camera release on pause/stop/reset/completion.
+- Kept directional repetition counts dependent on a completed movement-to-centre cycle, with neutral reacquisition after face-tracking interruption.
+- Added automated counting/classifier test cases and a post-deployment acceptance checklist.
