@@ -38,6 +38,7 @@
       $('overall-progress-fill').style.width = `${Math.min(100, data.total / data.totalTarget * 100)}%`;
       $('overall-progress').setAttribute('aria-valuemax', String(data.totalTarget));
       $('overall-progress').setAttribute('aria-valuenow', String(data.total));
+      $('export-session-btn').disabled = data.total === 0;
       DIRECTIONS.forEach(direction => {
         $(`count-${direction}`).textContent = String(data.counts[direction]);
         $(`stat-${direction}`).classList.toggle('goal-reached', data.counts[direction] >= data.targetPerDirection);
@@ -294,6 +295,38 @@
       stopTimer(); releaseCamera(); state.session = 'complete'; state.calibrating = false;
       setDirection('CENTER', 'Session complete. Your camera is off.'); setStatus('Goal reached. Your camera is off. Counts have not been saved.'); renderState(); speak('Session complete');
     }
+    function exportSessionSummary() {
+      const data = snapshot();
+      if (data.total === 0) { setStatus('Complete at least one repetition before exporting a summary.'); return; }
+      const rows = [
+        ['Head Movement Tracker — session summary'],
+        ['Exported at (UTC)', new Date().toISOString()],
+        ['Tracking mode', state.mode === 'manual' ? 'Manual (self-reported)' : 'Camera-assisted'],
+        ['Elapsed time', formatTime(state.elapsed)],
+        ['Total repetitions', data.total],
+        ['Goal per direction', data.targetPerDirection],
+        [],
+        ['Direction', 'Repetitions', 'Goal'],
+        ...DIRECTIONS.map(direction => [direction, data.counts[direction], data.targetPerDirection]),
+        [],
+        ['Privacy note', 'Downloaded locally after user action. This app does not upload the summary.'],
+        ['Limitations', 'Tracking estimates direction; it is not medical assessment or proof of exercise technique.']
+      ];
+      const escapeCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+      const csv = '\ufeff' + rows.map(row => row.map(escapeCell).join(',')).join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `head-movement-session-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      link.hidden = true;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      setStatus('Session summary downloaded. The file remains on your device unless you share it.');
+    }
+
     function startTimer() { stopTimer(); state.timer = window.setInterval(() => { if (state.session === 'running') { state.elapsed += 1; $('timer-display').textContent = formatTime(state.elapsed); } }, 1000); }
     function stopSession() {
       if (!['starting', 'running', 'paused'].includes(state.session)) return;
@@ -343,6 +376,7 @@
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     });
     $('calibrate-btn').addEventListener('click', () => beginCalibration(true));
+    $('export-session-btn').addEventListener('click', exportSessionSummary);
     $('flip-camera-btn').addEventListener('click', flipCamera);
     $('voice-btn').addEventListener('click', () => {
       state.voice = !state.voice;
@@ -356,5 +390,23 @@
     });
     document.querySelectorAll('[data-manual-direction]').forEach(button => button.addEventListener('click', () => recordManual(button.dataset.manualDirection)));
     renderState(); setDirection('READY', 'Start a session to begin.');
+
+    function updateNetworkHint() {
+      const note = $('offline-note');
+      if (!navigator.onLine) {
+        note.textContent = 'Offline: manual mode works; camera tracking needs internet.';
+        if (state.mode === 'camera' && state.session === 'idle') setStatus('You are offline. Switch to manual mode to track without the camera.');
+      } else {
+        note.textContent = 'Counts stay on this page unless you export them.';
+      }
+    }
+    window.addEventListener('online', updateNetworkHint);
+    window.addEventListener('offline', updateNetworkHint);
+    updateNetworkHint();
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('./sw.js').catch(() => {
+        // Offline installation is an enhancement; tracking remains usable if registration fails.
+      });
+    }
   });
 })();

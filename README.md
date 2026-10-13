@@ -1,59 +1,38 @@
-# Head Movement Tracker — Simple v2.3
+# Head Exercise Tracker — QA & SEO Update v2.4
 
-A small static app for tracking gentle head-movement cycles. It is designed for GitHub Pages and has two modes:
+A small, static GitHub Pages web app for counting head-movement cycles. The home screen stays focused on the video, live direction, repetitions and session controls.
 
-- **Camera mode:** MediaPipe estimates direction in the browser after the user starts the session. A camera repetition counts only after moving from centre to one direction and returning to centre.
-- **Manual mode:** the camera is not requested. The user taps a direction after completing a cycle themselves.
+## User features
 
-This is a personal movement-tracking prototype, not a medical device, diagnostic system, physiotherapy prescription, or clinically validated treatment tool.
+- Optional camera-assisted head-direction tracking with neutral calibration.
+- Manual mode when a user does not want to use a camera or tracking is unreliable.
+- Voice prompts that are off by default, plus Flip camera and Reset controls.
+- Downloadable CSV session summary; export is triggered by the user and is not uploaded.
+- Installable app shell and offline manual mode after the site has been loaded and cached once.
+- Short, crawlable guide, privacy and safety pages.
 
-## What's included
+## Deploy
 
-- `index.html` — short, simplified interface with labelled icon buttons.
-- `style.css` — responsive layout, large touch targets, zoom support, focus outlines, reduced-motion support.
-- `script.js` — camera lifecycle, calibration, session controls and UI updates.
-- `tracker-core.js` — pure repetition logic and pose classification.
-- `favicon.svg`, `robots.txt`, `sitemap.xml` — site assets and crawl files.
-- `tests/tracker-core.test.js` — automated tests for counting logic.
-- `package.json` — built-in Node.js test commands.
-- `CHANGELOG.md`, `VALIDATION-CHECKLIST.md` — changes and deployment tests.
+1. Extract the replacement ZIP.
+2. Upload **all files and folders** to the root of `MYG-1107/head-exercise-tracker`, replacing files with matching names.
+3. Keep `guide.html`, `privacy.html`, `safety.html`, `manifest.webmanifest`, `sw.js`, `icon-192.png`, `icon-512.png`, `social-card.png`, `tracker-core.js`, and `tests/`.
+4. Commit to `main` and wait for GitHub Pages to publish.
+5. Hard-refresh the deployed page and run `VALIDATION-CHECKLIST.md`.
 
-## Deploy on GitHub Pages
+No build step or package installation is required to run the website. For tests, use Node.js and run `npm run check`. The suite includes unit tests plus a lightweight DOM smoke test for manual mode and CSV export; it does not substitute for real camera testing.
 
-1. Extract this package.
-2. Open <https://github.com/MYG-1107/head-exercise-tracker>.
-3. Upload all package contents to the repository root, replacing same-named files. Keep `tracker-core.js` and the `tests/` folder.
-4. Commit to the branch configured for GitHub Pages (currently `main`).
-5. Hard-refresh <https://myg-1107.github.io/head-exercise-tracker/> after deployment.
+## Privacy
 
-No build process, server, account, database, or API key is needed.
+- No account, analytics, cookies, app database, session-history storage, photo upload or video upload feature.
+- Camera permission is requested only when camera mode is started.
+- MediaPipe scripts and model assets are loaded from jsDelivr only after the user chooses camera mode. The Source Sans 3 font is loaded from NAV's public CDN. These providers can receive standard request metadata.
+- The service worker caches static app files for offline loading. It does not cache camera frames or counts.
+- Session values stay in page memory until reload/close. A CSV file is created only when the user explicitly chooses Export summary; sharing that file is the user's choice.
 
-## Typography and content approach
+## Medical limitations
 
-The interface uses the Source Sans 3 typeface documented in NAV's public design system and follows the general accessibility principles described by UDI: clear hierarchy, keyboard navigation, relative type sizing and short, understandable wording. It does not copy either organisation's branding or unrelated service copy. Source: <https://aksel.nav.no/grunnleggende/styling/typografi> and <https://www.udi.no/en/about-the-udi/about-the-website/>.
+This is a movement counter prototype, not a medical device, diagnosis, exercise prescription or physiotherapy plan. Camera estimates may be wrong; manual entries are self-reported. Do not make treatment claims. Stop if an activity causes pain, dizziness, numbness or concerning symptoms and seek professional advice where appropriate.
 
-For the requested typeface, the browser requests the font from NAV's public CDN. Camera mode requests the version-pinned MediaPipe script and related model assets from jsDelivr after the user selects Start. Those providers can receive ordinary connection metadata, such as IP address and browser request details. For the most restrictive privacy requirement, replace the external font with a system-font stack and self-host/review the full MediaPipe code/model assets before release.
+## SEO notes
 
-## Privacy model
-
-- There is no image-upload function, analytics, login, cookie-based tracking, or persistent session history in this version.
-- Camera permission is requested only after the user selects Start in camera mode.
-- Camera frames are passed to the MediaPipe pipeline in the browser. The code does not intentionally upload or save camera frames.
-- Pause, stop, reset and completed sessions release the camera tracks.
-- Manual mode does not request camera access and does not load the MediaPipe script.
-- Counts and elapsed time exist in page memory only and clear on reload.
-- Voice is off by default and uses browser speech synthesis only; microphone audio is not recorded.
-
-## Test locally
-
-Install a current Node.js release and run:
-
-```bash
-npm run check
-```
-
-These tests validate syntax and the pure counting/classification logic. They do not prove real-world camera accuracy, browser permission behavior, CDN availability, accessibility compliance, or medical effectiveness.
-
-## Health and safety
-
-Move only within a comfortable range. Stop if movement causes pain, dizziness, numbness, or other concerning symptoms. Seek advice from a qualified healthcare professional when needed. The app estimates direction from facial landmarks; it does not measure clinical range of motion, assess technique or diagnose a condition.
+The site includes unique page titles/descriptions, canonical URLs, crawlable links, JSON-LD, Open Graph metadata, a sitemap and robots.txt. Submit the sitemap in Google Search Console and Bing Webmaster Tools after deployment. These improvements help discovery and understanding but cannot guarantee indexing or top rankings. See `SEO-SETUP.md`.

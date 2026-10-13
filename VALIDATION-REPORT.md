@@ -1,35 +1,33 @@
-# Validation report — Head Movement Tracker v2.3
+# QA and SEO validation report — v2.4.0
 
-Date: 10 October 2026
+Date: 2026-10-13
 
-## Automated checks run
+## Automated checks
 
-- `node --check script.js` — passed.
-- `node --check tracker-core.js` — passed.
-- `npm test` — 10 tests passed, 0 failed.
-- HTML source parsed with Python's built-in HTML parser — passed.
-- Duplicate HTML IDs — none found.
-- Static JavaScript `$('id')` references — all resolve to HTML IDs.
-- Local `script` / `stylesheet` / `favicon` assets — all exist.
-- CSS brace balance — passed.
-- Flip, Voice and Reset buttons — all exist and have descriptive `aria-label` values and titles.
-- Application files checked for Cloudinary/upload endpoints and browser persistent-storage APIs — no references found.
-- App state is held in JavaScript memory; the app does not write session data to storage.
+The release check suite now has 20 automated tests (unit, static-site and simulated DOM smoke tests). It includes:
 
-## Manual checks still required after deployment
+- JavaScript syntax checks for `script.js`, `tracker-core.js` and `sw.js`.
+- Unit tests for movement-cycle state, direct direction switches, interrupted tracking, goal limits, manual entries, completion, reset and pose classification.
+- Static tests for unique IDs and DOM references, unique metadata/canonical URLs, sitemap inclusion, internal links, privacy-sensitive API references, manifest and service worker configuration.
+- Manual validation checklist for camera/device, responsive, offline and SEO acceptance.
 
-This environment did not run a physical webcam or complete cross-browser automation, so the following are not claimed as passed:
+Run `npm run check` from the repository root. Run the browser smoke test after deployment.
 
-- Camera permission, real MediaPipe asset delivery, and actual face tracking.
-- Count accuracy for a representative group of people, lighting conditions and devices.
-- Camera flip/start/pause/stop timing on desktop and mobile.
-- Keyboard/screen-reader acceptance testing and zoom/responsive inspection.
-- Independent privacy/security review or any clinical/regulatory validation.
+## Privacy review
 
-See `VALIDATION-CHECKLIST.md` for the post-deployment acceptance procedure. Do not describe the app as clinically validated or as a medical device.
+- No image-upload APIs or `fetch`, XHR, or sendBeacon calls in app JS.
+- No localStorage/sessionStorage/cookie use for session counts.
+- CSV is generated only after a user clicks Export summary; it is not uploaded.
+- Service worker caches same-origin static application files only; cross-origin requests are not intercepted/cached by this worker.
+- The user-facing privacy page discloses NAV font and jsDelivr model requests and offline app-shell caching.
 
-## External dependencies
+## SEO review
 
-- Source Sans 3 is loaded from NAV's public CDN to follow the requested typography. This makes a standard font request before camera use.
-- Camera mode loads version-pinned MediaPipe Face Mesh code/model assets from jsDelivr only after Start is selected.
-- No app-level code uploads images, sends camera frames to a server, or persists counts. Third-party CDNs can receive normal connection metadata.
+- Unique title, meta description and canonical on the home, guide, privacy and safety pages.
+- Open Graph/Twitter metadata, WebApplication JSON-LD and social preview image.
+- Crawlable HTML links, updated robots.txt and sitemap with canonical URLs.
+- Separate support pages keep the homepage short while answering real questions.
+
+## Limitations
+
+This report does not certify camera detection accuracy across devices, legal compliance, clinical effectiveness or top search placement. These require physical-device/user testing, careful product review, and monitoring in Search Console after deployment.

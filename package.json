@@ -1,10 +1,10 @@
 {
   "name": "head-movement-tracker",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
-  "description": "A simple privacy-conscious head movement tracker for GitHub Pages.",
+  "description": "Privacy-conscious head movement counter with offline manual mode and session export.",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check script.js && node --check tracker-core.js && npm test"
+    "check": "node --check script.js && node --check tracker-core.js && node --check sw.js && npm test"
   }
 }

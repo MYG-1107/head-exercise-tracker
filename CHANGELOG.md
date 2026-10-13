@@ -1,13 +1,11 @@
 # Changelog
 
-## v2.3 — Simpler, clearer controls
+## v2.4.0 — QA, useful features and discoverability
 
-- Simplified the page into one main tracker view.
-- Made the camera preview and live direction the main focus.
-- Added icon buttons with visible short labels for Flip, Voice and Reset; each icon button also has an accessible name and title.
-- Used Source Sans 3 from NAV's public font CDN and short, clear content inspired by public-service accessibility principles; no UDI/NAV branding or unrelated copy was reproduced.
-- Added a responsive layout, visible keyboard focus, browser zoom support and reduced-motion support.
-- Kept camera access opt-in and removed image uploads, analytics and persistent session storage.
-- Added start-attempt cancellation handling, single-stream ownership, frame-loop cleanup and camera release on pause/stop/reset/completion.
-- Kept directional repetition counts dependent on a completed movement-to-centre cycle, with neutral reacquisition after face-tracking interruption.
-- Added automated counting/classifier test cases and a post-deployment acceptance checklist.
+- Added a user-triggered CSV session export with no server upload.
+- Added an installable PWA manifest and an app-shell service worker for offline interface/manual mode after first visit.
+- Added crawlable, original guide, privacy and safety pages while keeping the main tracker concise.
+- Improved title, description, canonical, Open Graph, Twitter and WebApplication JSON-LD metadata.
+- Updated robots.txt and sitemap.xml to include indexable support pages and accurate last-modified dates.
+- Added static DOM/link/SEO/privacy checks to the test suite.
+- Documented the limitations of SEO and the need for real-device camera QA.

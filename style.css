@@ -183,3 +183,31 @@ h1 { margin: 0; font-size: clamp(25px, 3.2vw, 34px); line-height: 1.14; letter-s
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* v2.4: export control and concise, crawlable support pages */
+.counts-tools { display: flex; align-items: end; justify-content: flex-end; gap: 9px; }
+.export-button { white-space: nowrap; }
+.footer-links { display: inline-flex; flex-wrap: wrap; gap: 12px; }
+.footer-links a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.info-page-shell { width: min(820px, calc(100% - 32px)); margin: 24px auto 34px; }
+.info-page-card { padding: clamp(20px, 4vw, 38px); border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.info-page-card h1 { margin: 3px 0 12px; font-size: clamp(28px, 4vw, 42px); line-height: 1.12; letter-spacing: -.035em; }
+.info-page-card h2 { margin: 26px 0 8px; font-size: 22px; letter-spacing: -.02em; }
+.info-page-card p, .info-page-card li { color: var(--muted); font-size: 16px; line-height: 1.65; }
+.info-page-card p { margin-bottom: 10px; }
+.info-page-card ul, .info-page-card ol { padding-left: 23px; }
+.info-page-card li { padding-left: 3px; margin: 5px 0; }
+.info-page-card a { color: var(--brand-dark); text-underline-offset: 3px; }
+.info-page-kicker { margin: 0 0 7px; color: var(--brand); font-size: 12px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.info-page-lead { color: var(--ink) !important; font-size: 18px !important; }
+.info-page-footer { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
+@media (max-width: 650px) {
+  .counts-tools { width: 100%; justify-content: space-between; align-items: end; }
+  .counts-heading { flex-wrap: wrap; }
+  .info-page-shell { width: calc(100% - 20px); margin-top: 12px; }
+  .info-page-card { padding: 18px; }
+  .info-page-card h1 { font-size: 28px; }
+  .info-page-card h2 { font-size: 20px; }
+  .footer-links { justify-content: center; }
+}
